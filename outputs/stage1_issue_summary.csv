@@ -1,0 +1,34 @@
+series,check,severity,action,entries,observations
+eua_auction,auction_gap,info,panel value left missing beyond carry limit,10,10
+eua_auction,auction_platforms,info,all platforms kept,1,2276
+eua_auction,return_outlier,warning,kept; flagged,5,5
+eurpln_ecb,cross_source_gap,warning,kept; NBP remains primary,84,98
+eurpln_nbp,holiday_observation,info,kept,1,1
+eurpln_nbp,return_outlier,info,kept,10,10
+eurpln_yahoo,close_outside_high_low,info,kept (cross-check series only),36,38
+eurpln_yahoo,return_outlier,info,kept,7,7
+eurpln_yahoo,cross_source_gap,warning,kept; NBP remains primary,217,277
+eurpln_yahoo,return_outlier,warning,kept; flagged,3,3
+eurpln_yahoo,return_outlier,warning,price set to NaN,1,1
+panel.eua_eur_t,panel_missing,info,left missing,9,91
+panel.eurpln,fx_carried_forward,info,previous NBP fixing used,48,48
+tge_gas_da,delivery_to_trade_date,info,trade_date = delivery_date - 1 day,1,3964
+tge_gas_da,low_volume,info,kept; flagged,76,89
+tge_gas_da,return_outlier,info,kept,10,10
+tge_gas_da,return_outlier,warning,kept; flagged,19,19
+ttf_c1,close_outside_high_low,info,kept; only close is used,260,404
+ttf_c1,first_row_change_artefact,info,Change % column ignored; returns recomputed from settlement,1,1
+ttf_c1,holiday_observation,info,kept,43,43
+ttf_c1,missing_day,info,left missing (no fill),44,44
+ttf_c1,return_outlier,info,kept,10,10
+ttf_c1,settlement_only_row,info,kept; only close is used,123,538
+ttf_c1/ttf_c2,roll_adjusted,info,raw roll-day returns replaced by same-contract return ln(c1_t / c2_t-1),1,107
+ttf_c1/ttf_c2,roll_misaligned,warning,roll-day return set to NaN in both adjusted series,2,2
+ttf_c2,close_outside_high_low,info,kept; only close is used,294,400
+ttf_c2,first_row_change_artefact,info,Change % column ignored; returns recomputed from settlement,1,1
+ttf_c2,holiday_observation,info,kept,60,60
+ttf_c2,return_outlier,info,kept,10,10
+ttf_c2,roll_unadjustable,info,return set to NaN,91,91
+ttf_c2,settlement_only_row,info,kept; only close is used,130,865
+ttf_c2,return_outlier,warning,kept; flagged,13,13
+ttf_c2,weekend_row,warning,dropped,28,28

@@ -1,0 +1,72 @@
+# Central configuration for the Polish gas supply risk framework.
+# All paths are relative to the repository root. Every tunable parameter
+# lives here so that no module hardcodes a path, threshold or position.
+
+project:
+  name: pl-gas-risk-framework
+  seed: 42
+
+paths:
+  raw_dir: data/raw            # immutable downloads (gitignored, licensed data)
+  clean_dir: data/clean        # cleaned and aligned series (gitignored, derived data)
+  outputs_dir: outputs         # committed summary tables (no raw price levels)
+  investing_dir: data/raw/investing   # manual Investing.com exports are placed here
+
+http:
+  user_agent: "pl-gas-risk-framework/0.1 (portfolio research project)"
+  timeout_s: 60
+  retries: 3
+  backoff_s: 2.0
+
+sources:
+  instrat:
+    base_url: https://energy-api.instrat.pl/api
+    gas_endpoint: prices/gas_price_rdn_daily   # TGEgasDA, PLN/MWh, indexed by delivery day
+    co2_endpoint: v2/prices/co2                # EEX primary auction clearing prices, EUR/t
+    start: "2016-01-01"
+  nbp:
+    base_url: https://api.nbp.pl/api/exchangerates/rates/a/eur
+    start: "2010-01-01"
+    chunk_days: 90             # NBP API rejects long date ranges, so requests are chunked
+  ecb:
+    url: https://data-api.ecb.europa.eu/service/data/EXR/D.PLN.EUR.SP00.A
+    start: "2010-01-01"
+  yahoo:
+    eurpln_ticker: EURPLN=X
+    start: "2010-01-01"
+  investing:
+    # Front month (CME listing, thin) and second month (ICE Endex, liquid).
+    files:
+      ttf_c1: ttf_c1.csv
+      ttf_c2: ttf_c2.csv
+    date_format: "%m/%d/%Y"    # English Investing.com site
+
+ttf:
+  # Which continuous series is the TTF hedge risk factor. "c2" is the ICE
+  # second-month contract held to roll; "c1" is the CME front month.
+  risk_series: c2
+  expiry_uk_business_days_before: 2   # ICE Endex and CME TTF calendar month rule
+  holiday_subdivision: ENG            # UK business days use England and Wales bank holidays
+
+tge:
+  # TGEgasDA for delivery day D is the volume weighted price of trades on day D-1.
+  trade_date_lag_days: 1
+  low_volume_ratio: 0.10     # flag trade days below 10% of the trailing 30-day median volume
+
+quality:
+  outlier_window: 250          # trading days in the rolling robust scale estimate
+  outlier_min_periods: 60
+  outlier_z: 6.0               # robust z-score (median / MAD) threshold on log returns
+  confirm_ratio: 0.5           # a move is confirmed if a second series moves the same way by >= 50%
+  contradict_ratio: 0.2        # a move is contradicted if the second series moves < 20% or the other way
+  reversal_ratio: 0.5          # and the move reverses by >= 50% on the next observation
+  stale_run_obs: 5             # consecutive unchanged prices that count as a stale run
+  roll_z: 4.0                  # roll-day adjusted return beyond 4 robust sd is treated as misaligned
+  roll_scale_window: 60
+  fx_cross_source_tol: 0.005   # 0.5% relative gap between FX sources triggers a warning
+  fx_ffill_max_days: 3         # max calendar days an NBP fixing is carried over a Polish holiday
+  co2_ffill_max_days: 7        # max calendar days an auction price is carried forward
+
+sample:
+  # The aligned panel starts when all core series (TTF c1 and c2, TGE, FX) are available.
+  start: auto

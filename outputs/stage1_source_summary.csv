@@ -1,0 +1,8 @@
+series,source,unit,rows,first,last
+ttf_c1,Investing.com TFAc1 (CME listing),EUR/MWh,2284,2017-10-23,2026-11-06
+ttf_c2,Investing.com TFMBMc2 (ICE Endex),EUR/MWh,4267,2010-03-15,2026-11-06
+tge_gas_da,"Instrat API, data from TGE",PLN/MWh,3964,2016-01-01,2026-11-07
+eurpln_nbp,NBP table A,PLN per EUR,4254,2010-01-04,2026-11-06
+eurpln_ecb,ECB reference rate,PLN per EUR,4315,2010-01-04,2026-11-06
+eurpln_yahoo,Yahoo EURPLN=X,PLN per EUR,4386,2010-01-04,2026-11-06
+eua_auction,"Instrat API, data from EEX",EUR/tCO2,2276,2016-01-11,2026-11-06

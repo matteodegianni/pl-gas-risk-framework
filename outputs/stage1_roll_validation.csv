@@ -1,0 +1,13 @@
+metric,value
+roll_days_total,200.0
+roll_days_with_c1,109.0
+roll_days_adjusted,107.0
+roll_days_excluded_misaligned,2.0
+roll_days_excluded_no_c1,91.0
+slope_raw_c1_on_prev_spread_roll_days,0.6916639783006273
+slope_raw_c1_on_prev_spread_other_days,0.020371475435914863
+mean_raw_c2_return_roll_days,0.010661497078561271
+mean_adjusted_return_roll_days,-0.003969493843137817
+sd_raw_c2_return_roll_days,0.07431766246784419
+sd_adjusted_return_roll_days,0.046543476386541154
+sd_c2_return_non_roll_days,0.04562409353210335

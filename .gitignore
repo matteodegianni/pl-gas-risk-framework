@@ -1,0 +1,15 @@
+# Licensed market data must never be committed (Investing.com, TGE via Instrat, NBP/ECB/Yahoo copies).
+data/raw/
+data/clean/
+!data/README.md
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
