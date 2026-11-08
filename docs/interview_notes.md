@@ -193,7 +193,7 @@ All figures are copied from the generated reports in `outputs/`. Book, limits, d
 ## Stage 16 - Pipeline and dashboard
 
 - `python -m gasrisk.pipeline` runs 14 steps from refresh to report and stops at the first failure; Docker image; Airflow DAG with retries on API steps (cron documented as the simpler alternative).
-- Star-schema exports with a synthetic label and no raw price levels; Power BI Project (TMDL model with 53 measures, PBIR report with 4 pages) validated without Desktop against Microsoft's JSON schemas and every DAX, visual and relationship reference.
+- Star-schema exports with a synthetic label and no raw price levels; Power BI Project (TMDL model with 56 measures, PBIR report with 4 pages) validated without Desktop against Microsoft's JSON schemas and every DAX, visual and relationship reference.
 - *Likely question: how do you know the dashboard works without opening it?* Structural validation plus deliberate error injection; DAX semantics and rendering still need the first-open checklist in the README.
 
 ## Stage 17 - Management memo
