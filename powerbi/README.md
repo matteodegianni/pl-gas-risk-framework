@@ -3,8 +3,30 @@
 Power BI Project with a TMDL semantic model and a PBIR report, built on the CSVs in `../exports/`. **All figures are a
 synthetic book on real market data**; every page shows this label.
 
-The project was generated and validated on macOS without Power BI Desktop (see "What was validated"), so the first
-open in Desktop is also its first real test: use the checklist below.
+The project was generated and validated on macOS without Power BI Desktop (see "What was validated"), then opened and
+refreshed in **Power BI Desktop 2.159 (October 2026)**: the model loads, all 17 tables refresh from the GitHub exports
+and all four pages render. Three rounds of fixes came out of those reviews (a measure named like a column, the PBIR
+version and base theme, and layout: truncated labels, scrolling charts, card formats); each one is now a validator
+rule, listed below.
+
+## Screenshots
+
+PDF exported from Desktop 2.159 at commit b7c4c2c, one PNG per page (synthetic book on real market data).
+
+![Risk overview](../docs/img/powerbi/1_risk_overview.png)
+![Backtesting](../docs/img/powerbi/2_backtesting.png)
+![Stress and margin](../docs/img/powerbi/3_stress_margin.png)
+![P&L attribution](../docs/img/powerbi/4_pnl_attribution.png)
+
+To refresh them after a change: export the report from Desktop (File > Export > Export to PDF), then
+
+```bash
+pip install -r requirements-dev.txt
+python powerbi/pdf_to_png.py path/to/GasRisk.pdf
+```
+
+The script writes `docs/img/powerbi/1_risk_overview.png` to `4_pnl_attribution.png` and refuses a PDF whose page
+count differs from the report's. PyMuPDF is a development dependency only (`requirements-dev.txt`).
 
 ## Contents
 
@@ -22,6 +44,7 @@ resources/CY24SU06.json            Power BI base theme, copied from microsoft/se
 build_pbip.py                      regenerates the model and both reports from exports/*.csv
 validate_pbip.py                   validation without Power BI
 set_data_folder.py                 switches the data source between GitHub and the local clone
+pdf_to_png.py                      converts Desktop's PDF export into the README screenshots (dev only)
 ```
 
 ## Star schema
@@ -129,7 +152,7 @@ not confirmed in Desktop, so `GasRiskMinimal.pbip` is there to isolate it (see t
 
 It cannot check DAX semantics, Power Query evaluation, or how the visuals render.
 
-## What to check on first open
+## What to check after a change (first-open checklist)
 
 1. **The project opens** without a "cannot load" error and shows the Risk overview page. If a page still fails to
    render, close Desktop and open `GasRiskMinimal.pbip` (one page, two cards, base theme only, same model):

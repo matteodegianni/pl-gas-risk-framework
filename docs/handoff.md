@@ -46,7 +46,7 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
 | 13 Credit | 3fbc325 | CP04 breaches PFE limit; wrong-way risk documented and illustrated (EE 4.56x-5.92x in high-price paths) |
 | 14 Framework | 899a61f | docs/risk_framework.md; `gasrisk.doccheck` traces every document number to outputs |
 | 15 Handover | e7e762a | 9 model cards, input schema, 18 acceptance criteria, handover/validate_outputs.py |
-| 16 Pipeline | 6f13b7e, b33bd12 | one-command pipeline, Dockerfile, Airflow DAG, exports/, Power BI PBIP (validated offline, never opened in Desktop) |
+| 16 Pipeline | 6f13b7e, b33bd12 | one-command pipeline, Dockerfile, Airflow DAG, exports/, Power BI PBIP (validated offline; opened, refreshed and exported in Desktop 2.159 after fixes 6f6acaf, afb80ee, 2727d06, b7c4c2c) |
 | 17 Memo | 45591df | docs/management_memo.md generated from tables; recommends TTF futures at 70% |
 | 18 Commentary | 3df9be1 | number-checked LLM commentary; committed run used the template (anthropic SDK not installed) |
 
@@ -56,8 +56,9 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
    later stages after each commit with `git push`).
 2. Phase 2 (Stages 10-13): done.
 3. Phase 3 (Stages 14-18): done.
-4. Open items for the user: open `powerbi/GasRisk.pbip` in Power BI Desktop and follow the first-open checklist in
-   `powerbi/README.md`; optionally `pip install anthropic` and run `python -m gasrisk.commentary` with credentials.
+4. Power BI: confirmed in Desktop 2.159; screenshots in `docs/img/powerbi/` (regenerate with `powerbi/pdf_to_png.py`
+   after a layout change). Open item for the user: optionally `pip install anthropic` and run
+   `python -m gasrisk.commentary` with credentials.
 
 ## Approved Phase 2 design
 
