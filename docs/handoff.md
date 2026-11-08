@@ -14,7 +14,7 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
   `data/raw` or `data/clean` is staged). Stop only if a test fails and can't be fixed, a result contradicts an
   earlier stage, or a choice would change the brief.
 - Before each stage, explain the key concept in 3-5 sentences.
-- Do **not** push to GitHub until the user confirms.
+- Push after each stage commit (`git push`); the user authorised this for Phases 2 and 3.
 
 ## Environment
 
@@ -40,14 +40,17 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
 | 8 Stress | 958f7d7 | worst crisis move driven by TGE spot, hedge ineffective against spikes |
 | 9 Attribution | 212e67e | exact reconciliation; hedge offsets most of the purchase price effect |
 | Phase 1 wrap-up | see git log | notebook, interview notes, this file, LICENSE |
+| 10 Pricing | dd529de | Black-76 futures-style (ICE TTF options), GARCH-t vol as a labelled assumption; Hull and Haug examples match |
+| 11 Hedging | aa5d303 | dollar-offset fails (29.1% pass), regression passes; basis carries 99.1% of ineffectiveness variance |
+| 12 Margin | ee93c18 | IM 3.68m EUR, 10-day buffer 7.09m EUR; liquidity risk is a TTF fall, not the P&L stress scenarios |
+| 13 Credit | 3fbc325 | CP04 breaches PFE limit; wrong-way risk documented and illustrated (EE 4.56x-5.92x in high-price paths) |
 
 ## Next steps
 
 1. Public GitHub repository: https://github.com/matteodegianni/pl-gas-risk-framework (Phase 1 pushed; push
    later stages after each commit with `git push`).
-2. Phase 2 (Stages 10-13): **design approved** by the user with three changes (below). Build in sequence with the
-   same per-stage routine (concept first, tests, report, README, commit).
-3. Phase 3 (Stages 14-18) after Phase 2.
+2. Phase 2 (Stages 10-13): done.
+3. Phase 3 (Stages 14-18): in progress (see git log for what is committed).
 
 ## Approved Phase 2 design
 
