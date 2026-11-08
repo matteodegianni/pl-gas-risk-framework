@@ -96,6 +96,34 @@ forecasting:
     l2_regularization: 1.0
   n_jobs: 4
 
+volatility:
+  series: [ttf, tge, eurpln, basis]
+  distributions: [normal, t]     # GARCH(1,1) innovation distributions compared for every series
+  extra_distributions:           # additional candidates per series
+    basis: [skewt]
+  # Mean equations, simplest first. Rule: keep the constant mean if its standardised residuals pass
+  # Ljung-Box at all lb_lags; otherwise use the lowest-BIC candidate that passes.
+  mean_candidates:
+    - {name: constant, lags: 0, dow: false}
+    - {name: ar1, lags: [1], dow: false}
+    - {name: ar2, lags: [1, 2], dow: false}
+    - {name: ar5, lags: 5, dow: false}
+    - {name: ar10, lags: 10, dow: false}
+    - {name: dow, lags: 0, dow: true}
+    - {name: ar2_dow, lags: [1, 2], dow: true}
+    - {name: ar5_dow, lags: 5, dow: true}
+    - {name: ar10_dow, lags: 10, dow: true}
+  lb_lags: [5, 10, 20]
+  return_scale: 100              # log returns in percent for numerical stability (basis stays in EUR/MWh)
+  ewma_lambda: 0.94              # RiskMetrics daily decay (benchmark)
+  rolling_window: 63             # rolling historical variance benchmark (about 3 months)
+  train_window: 750
+  refit_every: 21
+  horizons: [1, 5, 21]
+  benchmark: ewma                # DM tests compare every model with this one
+  alpha: 0.05
+  n_jobs: 4
+
 diagnostics:
   alpha: 0.05
   ljung_box_lags: [5, 10, 20]

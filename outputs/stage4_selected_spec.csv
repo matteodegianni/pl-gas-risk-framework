@@ -1,0 +1,5 @@
+series,mean,mean_lags,mean_dow,dist,mean_reason,dist_reason,mean_selected_on_first_window,same_on_first_window
+ttf,ar5,"[1, 2, 3, 4, 5]",False,t,lowest BIC among candidates passing Ljung-Box at all lags,best on both BIC and two-sided 1% tail calibration,ar5,True
+tge,ar10_dow,"[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]",True,t,lowest BIC among candidates passing Ljung-Box at all lags,best on both BIC and two-sided 1% tail calibration,ar10_dow,True
+eurpln,constant,[],False,t,constant mean passes Ljung-Box at all lags,best on both BIC and two-sided 1% tail calibration,ar1,False
+basis,ar5_dow,"[1, 2, 3, 4, 5]",True,t,lowest BIC among candidates passing Ljung-Box at all lags,best on both BIC and two-sided 1% tail calibration,ar5_dow,True

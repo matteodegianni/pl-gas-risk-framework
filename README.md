@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics) and 3 (forecasting) complete.** Later stages are not built yet.
+> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting) and 4 (volatility) complete.** Later stages are not built yet.
 
 ## Repository layout
 
@@ -23,6 +23,8 @@ src/gasrisk/
   diagnostics_report.py   generated Stage 2 report
   forecasting.py          Stage 3: walk-forward forecasts, Diebold-Mariano tests, ablation
   forecasting_report.py   generated Stage 3 report and figure
+  volatility.py           Stage 4: GARCH(1,1) normal vs t, EWMA and rolling benchmarks, forecast evaluation
+  volatility_report.py    generated Stage 4 report and figure
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -50,6 +52,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 ```bash
 .venv/bin/python -m gasrisk.diagnostics
 .venv/bin/python -m gasrisk.forecasting   # Stage 3, about 5-10 minutes on 4 cores
+.venv/bin/python -m gasrisk.volatility    # Stage 4
 ```
 
 ```bash
@@ -96,6 +99,21 @@ Key findings (all figures from the generated report):
 - **Basis, 1 day:** the lowest RMSE ratio is 0.911 (ETS) and directional accuracy ranges from 0.627 to 0.654 across models, but the RMSE gain is not significant (smallest raw DM p 0.0729); the linear model's gain comes from the basis's own reversal and survives the placebo.
 - **Overall:** after multiple-testing correction, no model beats the random walk for any series or horizon.
 
+## Stage 4 - volatility
+
+Generated results: [outputs/stage4_report.md](outputs/stage4_report.md).
+
+- **Mean equation.** Constant, AR(p) and day-of-week candidates fitted with GARCH(1,1)-t; the constant mean is kept only if its standardised residuals pass Ljung-Box at lags 5, 10 and 20, otherwise the lowest-BIC candidate that passes is used (Stage 5 filtered historical simulation resamples these residuals). The selection is repeated on the first training window as a look-ahead check.
+- **Innovations.** Normal and Student-t for all series, plus skewed-t for the basis; chosen by BIC and two-sided 1% tail calibration.
+- **Out-of-sample.** Rolling 750-day window, monthly re-estimation, daily filter updates; cumulative variance forecasts at 1, 5 and 21 days (accounting for the AR mean) against EWMA (RiskMetrics, lambda 0.94) and a 63-day rolling variance; MSE and QLIKE losses, DM tests with Holm adjustment, Mincer-Zarnowitz regressions.
+
+Key findings (all figures from the generated report):
+
+- **AR(1) is not enough.** It leaves significant residual autocorrelation for TTF, TGE and the basis. Selected means: TTF AR(5), TGE AR(10) with day-of-week, basis AR(5) with day-of-week, EUR/PLN constant. Ljung-Box p at lag 10 moves from 0.0039 to 0.5927 (TTF), 0.0000 to 0.8344 (TGE) and 0.0000 to 0.5709 (basis). The first-window check gives the same choice except for EUR/PLN (AR(1) on the first window).
+- **Student-t is selected for all four series** on both BIC and tail calibration. For the basis, skewed-t improves the left 1% tail (0.0134 against 0.0147) but worsens the right tail (0.0134 against 0.0099) and has a higher BIC (7898.8 against 7896.0), so Student-t is kept.
+- **Volatility is near-integrated** for TTF (persistence 0.9992) and the basis, which is also why EWMA, an integrated model, is hard to beat.
+- **Out of sample, EWMA is not beaten after Holm adjustment** for any series or horizon; GARCH lowers 1-day QLIKE for TGE and the basis at the raw level only (raw DM p 0.0051 to 0.0307, Holm p 0.1990 or higher).
+
 ## Data sources and credits
 
 | Data | Source | Licence |
@@ -115,4 +133,5 @@ Gas price data: Instrat, energy.instrat.pl, CC BY-NC 4.0, original source TGE. T
 - The front-month export (CME listing) is thin, with long settlement-only periods.
 - **The TGE-TTF basis is a location plus tenor basis**, not a pure location basis: TGE is a Polish day-ahead spot index, the hedge leg is the Dutch TTF second-month future. Its fat tails come mainly from TGE spot spikes (the TGE leg is the larger leg on most basis tail days, see the Stage 2 report), so basis risk measured here overstates what a same-tenor hedge would leave. A TTF day-ahead or TGE forward series would be needed to separate the two components; neither is available from the free sources used.
 - EUA prices are auction clearing prices held every few days, not continuous futures settlements.
+- GARCH mean equations are selected on the full sample (a first-window check is reported), and near-unit persistence may partly reflect unmodelled structural breaks such as the 2021-2022 crisis.
 - TGE 1-day forecastability comes from same-day TTF and FX moves (Stage 3 ablation and placebo) and does not survive a Holm correction for multiple testing. TGEgasDA averages trades over the day while TTF settles at the end of it, so the effect partly reflects index construction: usable as a risk forecast input, not evidence of a tradable edge.
