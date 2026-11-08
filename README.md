@@ -2,9 +2,13 @@
 
 Market, margin and credit risk framework for a Polish gas supplier that **buys physical gas at the TGE day-ahead index (PLN)**, **sells to B2B customers at fixed PLN prices** and **hedges with ICE Endex Dutch TTF futures and options (EUR)**. The book is exposed to gas price risk, TGE-TTF basis risk, EUR/PLN FX risk, margin liquidity risk and counterparty credit risk.
 
+[![Risk overview page of the Power BI dashboard: official 99% VaR against the limit, limit utilisation and breach days (synthetic book on real market data)](docs/img/powerbi/1_risk_overview.png)](#stage-16---daily-risk-pipeline)
+
+*Risk overview page of the Power BI dashboard, as rendered in Power BI Desktop 2.159 (synthetic book on real market data). All four pages: [Stage 16](#stage-16---daily-risk-pipeline).*
+
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **complete (Stages 1-18).** Positions, demand, limits, counterparties and the bank line are **synthetic**; market data are real and never committed.
+> Status: **Stages 1-17 complete; Stage 18 (optional LLM commentary) runs with a deterministic template fallback**, because the LLM SDK is an optional dependency. Positions, demand, limits, counterparties and the bank line are **synthetic**; market data are real and never committed.
 
 ## Overview
 
@@ -14,7 +18,15 @@ Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 | 2 Derivatives, margin, credit | 10-13 | Black-76 pricing of TTF options, hedge ratio and effectiveness with the basis explained, margin forecast and liquidity buffer, counterparty exposure with a scorecard and limits |
 | 3 Framework and delivery | 14-18 | Risk framework, model cards and handover package with an output validation script, one-command daily pipeline (Docker, Airflow), Power BI project, board memo, number-checked LLM commentary |
 
-Headline results (all from the generated reports): the official VaR model (GARCH-t with a Gaussian copula) passes conditional coverage at 95% and 99%; the TTF hedge cuts 21-day P&L variance by about half but crisis tail risk by only 12.5%, because the TGE-TTF location plus tenor basis carries 99.1% of hedge ineffectiveness; liquidity risk sits in a TTF collapse (stress margin call 17,864,382 EUR) rather than in the TGE spikes that drive P&L risk. Every number in the documents is checked against the generated outputs by `tests/test_docs.py`.
+### Key findings
+
+- **VaR backtest:** the official GARCH-t Gaussian-copula model and historical simulation pass conditional coverage at 95% and 99%; parametric normal and EWMA fail at 99% (30 exceptions against 15.68 expected).
+- **Hedging:** TTF futures cut P&L variance by 52.8% but crisis tail loss by only 12.5%; the TGE-TTF basis explains 99.1% of hedge ineffectiveness.
+- **Liquidity:** the largest stress margin call is 17,864,382 EUR (71.5% of the bank credit line), from a TTF fall, not from the TGE spikes that drive P&L risk.
+- **Forecasting:** no model beats the random walk after Holm correction, for TGE, TTF or EUR/PLN.
+- **Engineering:** 178 tests, a one-command pipeline with Docker and an Airflow DAG, and a Power BI dashboard opened and refreshed in Power BI Desktop 2.159.
+
+Every number in the documents is checked against the generated outputs by `tests/test_docs.py`.
 
 ## Repository layout
 
