@@ -1,0 +1,45 @@
+table DimScenario
+	lineageTag: f0cefdac-8dae-54e3-8431-fd6b55231ac7
+
+	column scenario_key
+		dataType: int64
+		lineageTag: b721d0d5-c26c-5d9f-811f-e1c01af06998
+		summarizeBy: none
+		sourceColumn: scenario_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column scenario
+		dataType: string
+		lineageTag: 17742469-1a0a-5a9e-8835-0476b14e9622
+		summarizeBy: none
+		sourceColumn: scenario
+
+		annotation SummarizationSetBy = Automatic
+
+	column scenario_type
+		dataType: string
+		lineageTag: 0b63660b-6321-5ee8-9c98-bfb610b9e1cc
+		summarizeBy: none
+		sourceColumn: scenario_type
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 2d45fd3b-1e77-5106-98f1-5c1dc79b1452
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimScenario = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("dim_scenario"),
+				    Typed = Table.TransformColumnTypes(Source, {{"scenario_key", Int64.Type}, {"scenario", type text}, {"scenario_type", type text}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

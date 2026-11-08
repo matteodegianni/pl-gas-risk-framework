@@ -1,0 +1,69 @@
+table DimCounterparty
+	lineageTag: a1104099-a224-54c4-acd9-60831162160a
+
+	column counterparty
+		dataType: string
+		lineageTag: 9a97caf8-5e4e-5c9f-b7e2-a58728fde8cd
+		summarizeBy: none
+		sourceColumn: counterparty
+
+		annotation SummarizationSetBy = Automatic
+
+	column type
+		dataType: string
+		lineageTag: 3e11c399-9ba4-5db6-8a52-f494514312a2
+		summarizeBy: none
+		sourceColumn: type
+
+		annotation SummarizationSetBy = Automatic
+
+	column weighted_score
+		dataType: double
+		lineageTag: 6a49d3ec-a8f3-582a-8477-46c62c8c3cc2
+		summarizeBy: sum
+		sourceColumn: weighted_score
+
+		annotation SummarizationSetBy = Automatic
+
+	column grade
+		dataType: int64
+		lineageTag: 6a17c5c9-931a-5261-a409-4c1bc83332be
+		summarizeBy: none
+		sourceColumn: grade
+
+		annotation SummarizationSetBy = Automatic
+
+	column grade_label
+		dataType: string
+		lineageTag: abc4ab67-9942-5e7b-99f1-3985a508e3d6
+		summarizeBy: none
+		sourceColumn: grade_label
+
+		annotation SummarizationSetBy = Automatic
+
+	column pfe_limit_eur
+		dataType: int64
+		lineageTag: e9775b60-2098-5f60-a97e-3260541b87e3
+		summarizeBy: sum
+		sourceColumn: pfe_limit_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 69a2db90-3d38-50ee-9a85-cbf87f359015
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimCounterparty = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("dim_counterparty"),
+				    Typed = Table.TransformColumnTypes(Source, {{"counterparty", type text}, {"type", type text}, {"weighted_score", type number}, {"grade", Int64.Type}, {"grade_label", type text}, {"pfe_limit_eur", Int64.Type}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

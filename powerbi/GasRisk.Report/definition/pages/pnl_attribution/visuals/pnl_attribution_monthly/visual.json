@@ -1,0 +1,96 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "pnl_attribution_monthly",
+  "position": {
+    "x": 20,
+    "y": 440,
+    "z": 4,
+    "width": 1240,
+    "height": 270,
+    "tabOrder": 4
+  },
+  "visual": {
+    "visualType": "columnChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "year_month"
+                }
+              },
+              "queryRef": "DimDate.year_month",
+              "nativeQueryRef": "year_month"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactAttribution"
+                    }
+                  },
+                  "Property": "Attributed P&L"
+                }
+              },
+              "queryRef": "FactAttribution.Attributed P&L",
+              "nativeQueryRef": "Attributed P&L"
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDriver"
+                    }
+                  },
+                  "Property": "driver_group"
+                }
+              },
+              "queryRef": "DimDriver.driver_group",
+              "nativeQueryRef": "driver_group"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Monthly P&L by driver group (PLN)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

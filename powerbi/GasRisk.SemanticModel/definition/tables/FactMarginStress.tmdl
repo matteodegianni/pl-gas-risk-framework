@@ -1,0 +1,89 @@
+table FactMarginStress
+	lineageTag: 4d4a30e7-e275-5dc1-8a41-12c6fa73bbe8
+
+	measure 'Stress Margin Call' = SUM ( FactMarginStress[margin_call_eur] )
+		formatString: #,0
+		lineageTag: cbb98e41-f55d-5efd-8ef4-3dc2ad022615
+
+	measure 'Stress Margin Call PLN' = SUM ( FactMarginStress[margin_call_pln] )
+		formatString: #,0
+		lineageTag: 6d6990a6-b447-5816-956c-752fbb68855b
+
+	measure 'Credit Line Utilisation' = MAX ( FactMarginStress[credit_line_utilisation] )
+		formatString: 0.0%
+		lineageTag: 41ddabe0-8aad-5e38-b1ee-d62931e40d06
+
+	column ttf_move
+		dataType: double
+		lineageTag: bc5484db-9b20-5c2e-bbfb-1ee5cde4e6b7
+		summarizeBy: sum
+		sourceColumn: ttf_move
+
+		annotation SummarizationSetBy = Automatic
+
+	column vm_eur
+		dataType: double
+		lineageTag: 69902005-3073-591e-adec-323a143f08e4
+		summarizeBy: sum
+		sourceColumn: vm_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column im_after_eur
+		dataType: double
+		lineageTag: 6340acf5-d92e-5bb3-8b0a-9675ad2380af
+		summarizeBy: sum
+		sourceColumn: im_after_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column margin_call_eur
+		dataType: double
+		lineageTag: 82087f82-b022-5c44-ad10-ecd2c153e299
+		summarizeBy: sum
+		sourceColumn: margin_call_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column margin_call_pln
+		dataType: double
+		lineageTag: b3237c7e-22fd-56bc-bbad-aba15d81eb8a
+		summarizeBy: sum
+		sourceColumn: margin_call_pln
+
+		annotation SummarizationSetBy = Automatic
+
+	column credit_line_utilisation
+		dataType: double
+		lineageTag: cfc4134b-21cd-5f62-bbb6-f834fdfc10b6
+		summarizeBy: sum
+		sourceColumn: credit_line_utilisation
+
+		annotation SummarizationSetBy = Automatic
+
+	column scenario_key
+		dataType: int64
+		lineageTag: 1fea150a-dc17-5181-8157-c7b0449656f6
+		summarizeBy: none
+		sourceColumn: scenario_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 2b3d62db-7da2-5190-a843-76feb7cf841a
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactMarginStress = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_margin_stress"),
+				    Typed = Table.TransformColumnTypes(Source, {{"ttf_move", type number}, {"vm_eur", type number}, {"im_after_eur", type number}, {"margin_call_eur", type number}, {"margin_call_pln", type number}, {"credit_line_utilisation", type number}, {"scenario_key", Int64.Type}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

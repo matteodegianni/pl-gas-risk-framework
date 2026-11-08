@@ -1,0 +1,146 @@
+table FactMarginForecast
+	lineageTag: 7bfdbba7-9978-58d9-9641-b912fcdda04d
+
+	measure 'Margin Outflow Mean' = SUM ( FactMarginForecast[mean_cum_outflow_eur] )
+		formatString: #,0
+		lineageTag: d68affcf-7746-56b7-8203-063174a01439
+
+	measure 'Margin Outflow 95' = SUM ( FactMarginForecast[q95_cum_outflow_eur] )
+		formatString: #,0
+		lineageTag: 3f5b6758-0b0e-53c2-9d29-6d04628ced34
+
+	measure 'Margin Outflow 99' = SUM ( FactMarginForecast[q99_cum_outflow_eur] )
+		formatString: #,0
+		lineageTag: 5c7ee0ef-7b41-50ee-bd10-81ae084a8720
+
+	measure 'Liquidity Buffer' = MAX ( FactMarginForecast[buffer_10d_q99_eur] )
+		formatString: #,0
+		lineageTag: 63b542a5-bb37-5237-86e8-6a0dadfe0214
+
+	measure 'Initial Margin Today' = MAX ( FactMarginForecast[im_today_eur] )
+		formatString: #,0
+		lineageTag: 2d240ac5-cbf6-576a-8814-48ea60156831
+
+	measure 'Bank Credit Line' = MAX ( FactMarginForecast[bank_credit_line_eur] )
+		formatString: #,0
+		lineageTag: 924d1979-6180-587d-aa71-fe256015b78a
+
+	measure 'Buffer Over Credit Line' = DIVIDE ( [Liquidity Buffer], [Bank Credit Line] )
+		formatString: 0.0%
+		lineageTag: 7879e908-18a5-5e69-bf60-41406e579af1
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: ca49a040-b294-5272-90cf-2c099cf3286e
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column day
+		dataType: int64
+		lineageTag: f4570022-48f6-5355-8aff-2f586f4dfcb8
+		summarizeBy: none
+		sourceColumn: day
+
+		annotation SummarizationSetBy = Automatic
+
+	column mean_cum_outflow_eur
+		dataType: double
+		lineageTag: e39094f3-910c-5796-b271-ff43c0ae2444
+		summarizeBy: sum
+		sourceColumn: mean_cum_outflow_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column q95_cum_outflow_eur
+		dataType: double
+		lineageTag: 7be1216d-7d87-5b1a-bc50-7c7cb983620a
+		summarizeBy: sum
+		sourceColumn: q95_cum_outflow_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column q99_cum_outflow_eur
+		dataType: double
+		lineageTag: 274a4e0b-bbc7-50ec-91b5-fa804b7be57c
+		summarizeBy: sum
+		sourceColumn: q99_cum_outflow_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column q99_cum_outflow_pln
+		dataType: double
+		lineageTag: 2a72a9cb-9b2f-5d8b-a1d1-c9380eeb44d7
+		summarizeBy: sum
+		sourceColumn: q99_cum_outflow_pln
+
+		annotation SummarizationSetBy = Automatic
+
+	column mean_daily_call_eur
+		dataType: double
+		lineageTag: 01e7282c-f2b8-551e-969d-29d7f8d71e6d
+		summarizeBy: sum
+		sourceColumn: mean_daily_call_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column q99_daily_call_eur
+		dataType: double
+		lineageTag: ef51eca6-3765-5237-b3fd-c08853936286
+		summarizeBy: sum
+		sourceColumn: q99_daily_call_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column mean_im_eur
+		dataType: double
+		lineageTag: 7634b8b0-8ad2-5e8e-963f-b97e8bb2a3fc
+		summarizeBy: sum
+		sourceColumn: mean_im_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column buffer_10d_q99_eur
+		dataType: double
+		lineageTag: 819aee62-e4be-5b53-afdc-0c54f10e69eb
+		summarizeBy: sum
+		sourceColumn: buffer_10d_q99_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column bank_credit_line_eur
+		dataType: double
+		lineageTag: 071994d3-7142-5944-9c8b-468768afd36e
+		summarizeBy: sum
+		sourceColumn: bank_credit_line_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column im_today_eur
+		dataType: double
+		lineageTag: 91b11b13-a0d8-5c7e-bb19-a856c5592348
+		summarizeBy: sum
+		sourceColumn: im_today_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 81cd234d-9371-5ea5-b8d7-4d6fa2cbe858
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactMarginForecast = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_margin_forecast"),
+				    Typed = Table.TransformColumnTypes(Source, {{"date", type date}, {"day", Int64.Type}, {"mean_cum_outflow_eur", type number}, {"q95_cum_outflow_eur", type number}, {"q99_cum_outflow_eur", type number}, {"q99_cum_outflow_pln", type number}, {"mean_daily_call_eur", type number}, {"q99_daily_call_eur", type number}, {"mean_im_eur", type number}, {"buffer_10d_q99_eur", type number}, {"bank_credit_line_eur", type number}, {"im_today_eur", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

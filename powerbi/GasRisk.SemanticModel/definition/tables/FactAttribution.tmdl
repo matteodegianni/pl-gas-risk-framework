@@ -1,0 +1,76 @@
+table FactAttribution
+	lineageTag: 793df26d-a990-5a09-8272-88c4f1a65be1
+
+	measure 'Attributed P&L' = SUM ( FactAttribution[pnl_pln] )
+		formatString: #,0
+		lineageTag: eed64d07-3842-5602-9d02-e16f421cdcc8
+
+	measure 'Total P&L' = CALCULATE ( [Attributed P&L], ALL ( DimDriver ) )
+		formatString: #,0
+		lineageTag: 3176215d-4311-5f68-954e-9b8ff41939a1
+
+	measure 'Price Effect' = CALCULATE ( [Attributed P&L], DimDriver[driver_group] = "price" )
+		formatString: #,0
+		lineageTag: 8828df2d-6258-5f18-9315-a171fbe76d88
+
+	measure 'FX Effect' = CALCULATE ( [Attributed P&L], DimDriver[driver_group] = "fx" )
+		formatString: #,0
+		lineageTag: ee45a9e4-428d-51ef-98b6-ee8cf7d8f13e
+
+	measure 'Volume Effect' = CALCULATE ( [Attributed P&L], DimDriver[driver_group] = "volume" )
+		formatString: #,0
+		lineageTag: 7ee0b1a5-e391-51c3-893b-afe72623a613
+
+	measure 'Plan Margin' = CALCULATE ( [Attributed P&L], DimDriver[driver_group] = "plan" )
+		formatString: #,0
+		lineageTag: 5168f731-9463-5e87-8678-cf74a556adf5
+
+	measure 'Cumulative P&L' =
+			VAR d = MAX ( DimDate[date] )
+			RETURN CALCULATE ( [Attributed P&L], FILTER ( ALL ( DimDate[date] ), DimDate[date] <= d ) )
+		formatString: #,0
+		lineageTag: eec1bfde-bad9-5564-9937-0af2ca3df1b3
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: af8a65ce-31d3-57e2-b44b-264fbe5aafd4
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column driver_key
+		dataType: string
+		lineageTag: ca97954d-90fa-52e8-9dc9-09a33b144b1f
+		summarizeBy: none
+		sourceColumn: driver_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column pnl_pln
+		dataType: double
+		lineageTag: 6d793640-0606-52ef-aa2c-4f1868eae8b5
+		summarizeBy: sum
+		sourceColumn: pnl_pln
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 11b4197f-d6a1-5992-a314-280c60632d4b
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactAttribution = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_attribution"),
+				    Typed = Table.TransformColumnTypes(Source, {{"date", type date}, {"driver_key", type text}, {"pnl_pln", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "backtesting_tests",
+  "position": {
+    "x": 860,
+    "y": 90,
+    "z": 2,
+    "width": 400,
+    "height": 300,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimMethod"
+                    }
+                  },
+                  "Property": "method_name"
+                }
+              },
+              "queryRef": "DimMethod.method_name",
+              "nativeQueryRef": "method_name"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactBacktest"
+                    }
+                  },
+                  "Property": "level"
+                }
+              },
+              "queryRef": "FactBacktest.level",
+              "nativeQueryRef": "level"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactBacktest"
+                    }
+                  },
+                  "Property": "Observed Exceptions"
+                }
+              },
+              "queryRef": "FactBacktest.Observed Exceptions",
+              "nativeQueryRef": "Observed Exceptions"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactBacktest"
+                    }
+                  },
+                  "Property": "Expected Exceptions"
+                }
+              },
+              "queryRef": "FactBacktest.Expected Exceptions",
+              "nativeQueryRef": "Expected Exceptions"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactBacktest"
+                    }
+                  },
+                  "Property": "Kupiec p"
+                }
+              },
+              "queryRef": "FactBacktest.Kupiec p",
+              "nativeQueryRef": "Kupiec p"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactBacktest"
+                    }
+                  },
+                  "Property": "Conditional Coverage p"
+                }
+              },
+              "queryRef": "FactBacktest.Conditional Coverage p",
+              "nativeQueryRef": "Conditional Coverage p"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Kupiec and Christoffersen tests'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

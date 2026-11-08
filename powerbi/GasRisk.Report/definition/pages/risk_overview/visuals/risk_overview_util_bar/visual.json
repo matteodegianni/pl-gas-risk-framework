@@ -1,0 +1,78 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "risk_overview_util_bar",
+  "position": {
+    "x": 860,
+    "y": 130,
+    "z": 5,
+    "width": 400,
+    "height": 330,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimLimit"
+                    }
+                  },
+                  "Property": "limit_name"
+                }
+              },
+              "queryRef": "DimLimit.limit_name",
+              "nativeQueryRef": "limit_name"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactLimitUtilisation"
+                    }
+                  },
+                  "Property": "Latest Utilisation"
+                }
+              },
+              "queryRef": "FactLimitUtilisation.Latest Utilisation",
+              "nativeQueryRef": "Latest Utilisation"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Limit utilisation today'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "risk_overview_var_line",
+  "position": {
+    "x": 20,
+    "y": 130,
+    "z": 4,
+    "width": 820,
+    "height": 330,
+    "tabOrder": 4
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "date"
+                }
+              },
+              "queryRef": "DimDate.date",
+              "nativeQueryRef": "date"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactVaR"
+                    }
+                  },
+                  "Property": "Official VaR 99"
+                }
+              },
+              "queryRef": "FactVaR.Official VaR 99",
+              "nativeQueryRef": "Official VaR 99"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactVaR"
+                    }
+                  },
+                  "Property": "VaR Limit"
+                }
+              },
+              "queryRef": "FactVaR.VaR Limit",
+              "nativeQueryRef": "VaR Limit"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Official 99% VaR against the limit (PLN)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

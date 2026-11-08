@@ -1,0 +1,92 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "backtesting_pnl_line",
+  "position": {
+    "x": 20,
+    "y": 400,
+    "z": 3,
+    "width": 1240,
+    "height": 310,
+    "tabOrder": 3
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDate"
+                    }
+                  },
+                  "Property": "date"
+                }
+              },
+              "queryRef": "DimDate.date",
+              "nativeQueryRef": "date"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactVaR"
+                    }
+                  },
+                  "Property": "Realised P&L"
+                }
+              },
+              "queryRef": "FactVaR.Realised P&L",
+              "nativeQueryRef": "Realised P&L"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactVaR"
+                    }
+                  },
+                  "Property": "Official VaR 99"
+                }
+              },
+              "queryRef": "FactVaR.Official VaR 99",
+              "nativeQueryRef": "Official VaR 99"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Realised next-day P&L and official 99% VaR (PLN)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

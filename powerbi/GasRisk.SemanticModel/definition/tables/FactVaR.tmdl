@@ -1,0 +1,188 @@
+table FactVaR
+	lineageTag: 24fa4adc-ba65-536d-983a-bec46f34def3
+
+	measure 'VaR 95' = AVERAGE ( FactVaR[var_95] )
+		formatString: #,0
+		lineageTag: 6681c3c7-35e3-59e9-8c7b-bd2254068d8d
+
+	measure 'VaR 99' = AVERAGE ( FactVaR[var_99] )
+		formatString: #,0
+		lineageTag: c6b5fd95-5284-5845-a4bc-6aba339da09a
+
+	measure 'ES 97.5' = AVERAGE ( FactVaR[es_97_5] )
+		formatString: #,0
+		lineageTag: ff288370-b7e6-5e4a-8676-b78dfa219d56
+
+	measure 'Official VaR 99' = CALCULATE ( [VaR 99], DimMethod[is_official] = 1 )
+		formatString: #,0
+		lineageTag: c4d72f19-9435-5bd1-9bff-fcf682ed5f69
+
+	measure 'Official ES 97.5' = CALCULATE ( [ES 97.5], DimMethod[is_official] = 1 )
+		formatString: #,0
+		lineageTag: 2fcc140e-c8cd-5d6a-9788-b5062d03ce5a
+
+	measure 'Latest Official VaR 99' =
+			VAR d = CALCULATE ( MAX ( FactVaR[date] ), ALL ( FactVaR ), ALL ( DimDate ) )
+			RETURN CALCULATE ( [Official VaR 99], ALL ( DimDate ), FactVaR[date] = d )
+		formatString: #,0
+		lineageTag: f53263fa-fde6-5e7a-a543-18cc24e219b5
+
+	measure 'VaR Limit' = CALCULATE ( MAX ( DimLimit[limit_value] ), DimLimit[limit_key] = "var_99" )
+		formatString: #,0
+		lineageTag: 3cf15e03-ed0e-5caa-be0b-f9a580bed4b5
+
+	measure 'Realised P&L' = SUM ( FactVaR[realised_pnl_next_day] )
+		formatString: #,0
+		lineageTag: 314af7ca-c8ed-5da6-90c2-17113f54d2d0
+
+	measure 'Exceptions 95' = SUM ( FactVaR[exception_95] )
+		formatString: 0
+		lineageTag: d064e667-eda3-5767-8a7e-327bc73cc0b5
+
+	measure 'Exceptions 99' = SUM ( FactVaR[exception_99] )
+		formatString: 0
+		lineageTag: 2c217f7e-9160-5708-bf1b-6b16c6de99ae
+
+	measure 'Expected Exceptions 99' = COUNT ( FactVaR[realised_pnl_next_day] ) * 0.01
+		formatString: 0.0
+		lineageTag: 97f378a7-c8ed-5dc8-bba9-2bc092146129
+
+	measure 'Exception Rate 99' = DIVIDE ( [Exceptions 99], COUNT ( FactVaR[realised_pnl_next_day] ) )
+		formatString: 0.00%
+		lineageTag: a8120726-74bc-5393-b4a4-319e124122b8
+
+	measure 'Data Label' = "Synthetic book on real market data"
+		lineageTag: 47c4a2cf-1126-5f74-bc8a-d3f1e685b0e1
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: dfe0ac56-9ffc-5093-a0f3-ae31068fa22d
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column target
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 383911cf-ed0c-505b-88f4-48ada809494b
+		summarizeBy: none
+		sourceColumn: target
+
+		annotation SummarizationSetBy = Automatic
+
+	column method_key
+		dataType: string
+		lineageTag: d1c2fe5c-d9f2-54ca-aa1e-037a635a7bb6
+		summarizeBy: none
+		sourceColumn: method_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column var_95
+		dataType: double
+		lineageTag: 12757f36-a7f1-5020-ad29-a5d8b608114e
+		summarizeBy: sum
+		sourceColumn: var_95
+
+		annotation SummarizationSetBy = Automatic
+
+	column var_99
+		dataType: double
+		lineageTag: b8ad3e2c-082f-552f-bd2b-1340f163d94a
+		summarizeBy: sum
+		sourceColumn: var_99
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_95
+		dataType: double
+		lineageTag: c23ab570-5638-5a71-b0ae-18faa93eb91f
+		summarizeBy: sum
+		sourceColumn: es_95
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_97_5
+		dataType: double
+		lineageTag: bf55cf5a-2c46-5aa6-a7f4-7889745580c3
+		summarizeBy: sum
+		sourceColumn: es_97_5
+
+		annotation SummarizationSetBy = Automatic
+
+	column es_99
+		dataType: double
+		lineageTag: 57e6cc6b-3ff9-5512-80e2-d1597945db67
+		summarizeBy: sum
+		sourceColumn: es_99
+
+		annotation SummarizationSetBy = Automatic
+
+	column realised_pnl_next_day
+		dataType: double
+		lineageTag: 209c8ea4-0141-5fa2-bb25-11d685d8f07c
+		summarizeBy: sum
+		sourceColumn: realised_pnl_next_day
+
+		annotation SummarizationSetBy = Automatic
+
+	column pnl_tge
+		dataType: double
+		lineageTag: 722c8a00-b74e-5aba-8ffa-f5dc9c93b8c4
+		summarizeBy: sum
+		sourceColumn: pnl_tge
+
+		annotation SummarizationSetBy = Automatic
+
+	column pnl_ttf
+		dataType: double
+		lineageTag: c610fb3c-c447-53f7-9595-344c7204856e
+		summarizeBy: sum
+		sourceColumn: pnl_ttf
+
+		annotation SummarizationSetBy = Automatic
+
+	column pnl_fx
+		dataType: double
+		lineageTag: 0f330171-fc74-5459-a55d-cd908698bd4a
+		summarizeBy: sum
+		sourceColumn: pnl_fx
+
+		annotation SummarizationSetBy = Automatic
+
+	column exception_95
+		dataType: double
+		lineageTag: df767292-1e88-5361-af01-0ec1c396636e
+		summarizeBy: sum
+		sourceColumn: exception_95
+
+		annotation SummarizationSetBy = Automatic
+
+	column exception_99
+		dataType: double
+		lineageTag: 806c28e8-21d1-58a4-aaa9-cfc880316f98
+		summarizeBy: sum
+		sourceColumn: exception_99
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 5e37a6f6-12ae-540b-b82b-fa0a21de8c2a
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactVaR = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_var"),
+				    Typed = Table.TransformColumnTypes(Source, {{"date", type date}, {"target", type date}, {"method_key", type text}, {"var_95", type number}, {"var_99", type number}, {"es_95", type number}, {"es_97_5", type number}, {"es_99", type number}, {"realised_pnl_next_day", type number}, {"pnl_tge", type number}, {"pnl_ttf", type number}, {"pnl_fx", type number}, {"exception_95", type number}, {"exception_99", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

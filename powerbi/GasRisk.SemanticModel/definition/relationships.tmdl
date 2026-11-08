@@ -1,0 +1,59 @@
+relationship fe227517-ea5d-5d9c-a865-4c2ff4c05fc1
+	fromColumn: FactVaR.date
+	toColumn: DimDate.date
+
+relationship f81ec297-0b26-502f-abfc-8e7cd3b5ca46
+	fromColumn: FactVaR.method_key
+	toColumn: DimMethod.method_key
+
+relationship 558f2063-630f-51f0-8a83-edb9e208f573
+	fromColumn: FactBacktest.method_key
+	toColumn: DimMethod.method_key
+
+relationship c74d873a-5f32-53f8-bd11-c8ffb9b8d882
+	fromColumn: FactLimitUtilisation.date
+	toColumn: DimDate.date
+
+relationship 619ddbdc-9247-5876-be01-d4bfe4569f37
+	fromColumn: FactLimitUtilisation.limit_key
+	toColumn: DimLimit.limit_key
+
+relationship 13da4c87-35d8-561a-b663-7d1973285b70
+	fromColumn: FactRiskContribution.date
+	toColumn: DimDate.date
+
+relationship 52e4712e-e083-5ca2-bf27-65686f5a77c4
+	fromColumn: FactRiskContribution.factor_key
+	toColumn: DimRiskFactor.factor_key
+
+relationship 5db18e84-4b03-5856-b4db-6a530356741d
+	fromColumn: FactStress.scenario_key
+	toColumn: DimScenario.scenario_key
+
+relationship 11ec96bc-3e6d-5ef9-9539-64e64b2d062c
+	fromColumn: FactStress.factor_key
+	toColumn: DimRiskFactor.factor_key
+
+relationship 566624aa-9cc9-56b2-a655-4c288159b5ac
+	fromColumn: FactMarginStress.scenario_key
+	toColumn: DimScenario.scenario_key
+
+relationship 4f249825-791e-5884-ae14-44f4f55cbf99
+	fromColumn: FactMarginForecast.date
+	toColumn: DimDate.date
+
+relationship 6c44d142-0a57-547e-a506-cc4b2f97a4b0
+	fromColumn: FactAttribution.date
+	toColumn: DimDate.date
+
+relationship 0c696092-084f-58c6-a3aa-bb983df4fe79
+	fromColumn: FactAttribution.driver_key
+	toColumn: DimDriver.driver_key
+
+relationship d9844802-4445-5f5a-973a-67793d6ced31
+	fromColumn: FactCredit.counterparty
+	toColumn: DimCounterparty.counterparty
+
+relationship a36e8398-fc3a-5f4b-a69f-b03fd4be2986
+	fromColumn: FactCreditProfile.counterparty
+	toColumn: DimCounterparty.counterparty

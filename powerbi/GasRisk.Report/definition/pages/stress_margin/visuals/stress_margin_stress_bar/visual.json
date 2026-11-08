@@ -1,0 +1,96 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "stress_margin_stress_bar",
+  "position": {
+    "x": 20,
+    "y": 90,
+    "z": 1,
+    "width": 620,
+    "height": 330,
+    "tabOrder": 1
+  },
+  "visual": {
+    "visualType": "barChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimScenario"
+                    }
+                  },
+                  "Property": "scenario"
+                }
+              },
+              "queryRef": "DimScenario.scenario",
+              "nativeQueryRef": "scenario"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactStress"
+                    }
+                  },
+                  "Property": "Stress Loss"
+                }
+              },
+              "queryRef": "FactStress.Stress Loss",
+              "nativeQueryRef": "Stress Loss"
+            }
+          ]
+        },
+        "Series": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimRiskFactor"
+                    }
+                  },
+                  "Property": "factor_name"
+                }
+              },
+              "queryRef": "DimRiskFactor.factor_name",
+              "nativeQueryRef": "factor_name"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Stress loss by scenario and risk factor (PLN)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

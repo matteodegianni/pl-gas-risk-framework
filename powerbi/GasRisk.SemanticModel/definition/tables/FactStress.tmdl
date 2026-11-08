@@ -1,0 +1,65 @@
+table FactStress
+	lineageTag: 37e3d397-9c33-57bb-b32a-336c319ef764
+
+	measure 'Stress P&L' = SUM ( FactStress[pnl_pln] )
+		formatString: #,0
+		lineageTag: cb89d749-1eaf-5c98-856e-b7e5eadf2c95
+
+	measure 'Stress Loss' = - [Stress P&L]
+		formatString: #,0
+		lineageTag: ec21e437-e5a8-59ae-9d00-ab9d5cd08a5d
+
+	measure 'Stress Loss Over VaR' = MAX ( FactStress[loss_over_var99] )
+		formatString: 0.00
+		lineageTag: da7c1186-71cc-5e8e-9673-2b92f45124f5
+
+	column factor_key
+		dataType: string
+		lineageTag: a4119fa7-f172-59b5-95e2-295e5b9caf93
+		summarizeBy: none
+		sourceColumn: factor_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column pnl_pln
+		dataType: double
+		lineageTag: b1ad1ad7-ebad-5c4b-a7be-a8db0b90d2c3
+		summarizeBy: sum
+		sourceColumn: pnl_pln
+
+		annotation SummarizationSetBy = Automatic
+
+	column loss_over_var99
+		dataType: double
+		lineageTag: ab943c0b-1437-5285-bc05-decdde634e3c
+		summarizeBy: sum
+		sourceColumn: loss_over_var99
+
+		annotation SummarizationSetBy = Automatic
+
+	column scenario_key
+		dataType: int64
+		lineageTag: 50247e87-4caf-5b85-8aa5-e968bedbdfdd
+		summarizeBy: none
+		sourceColumn: scenario_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 6324e399-fa87-5b75-b72c-9ab6c1dcf44a
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactStress = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_stress"),
+				    Typed = Table.TransformColumnTypes(Source, {{"factor_key", type text}, {"pnl_pln", type number}, {"loss_over_var99", type number}, {"scenario_key", Int64.Type}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,45 @@
+table DimDriver
+	lineageTag: 879b440d-b2c4-5bc5-b797-b8265938136d
+
+	column driver_key
+		dataType: string
+		lineageTag: 1acbbac4-d924-53e4-82c3-529aae4b9478
+		summarizeBy: none
+		sourceColumn: driver_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column driver_name
+		dataType: string
+		lineageTag: 3ec51fcf-8382-55cb-8597-8054265ed008
+		summarizeBy: none
+		sourceColumn: driver_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column driver_group
+		dataType: string
+		lineageTag: 81605355-3f9d-571f-b519-12a9264dafce
+		summarizeBy: none
+		sourceColumn: driver_group
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 2c9d64d2-d9df-568e-9bdc-a1ac3e18061a
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimDriver = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("dim_driver"),
+				    Typed = Table.TransformColumnTypes(Source, {{"driver_key", type text}, {"driver_name", type text}, {"driver_group", type text}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

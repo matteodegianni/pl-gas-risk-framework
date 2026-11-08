@@ -1,0 +1,45 @@
+table DimMethod
+	lineageTag: 848f6c0d-6897-543f-bcc9-976b0e836335
+
+	column method_key
+		dataType: string
+		lineageTag: 70eb62a9-0acd-57dd-8d9c-707ecebc1f9c
+		summarizeBy: none
+		sourceColumn: method_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column method_name
+		dataType: string
+		lineageTag: 67f7050e-61b8-5a4f-9953-9bdb4e3fb2ac
+		summarizeBy: none
+		sourceColumn: method_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_official
+		dataType: int64
+		lineageTag: bb7d5626-90fb-5203-90fa-df0d45c84b11
+		summarizeBy: none
+		sourceColumn: is_official
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 0f8105b0-91b6-558e-b8e5-3942f7846ad1
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimMethod = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("dim_method"),
+				    Typed = Table.TransformColumnTypes(Source, {{"method_key", type text}, {"method_name", type text}, {"is_official", Int64.Type}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

@@ -1,0 +1,106 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "stress_margin_margin_col",
+  "position": {
+    "x": 660,
+    "y": 90,
+    "z": 2,
+    "width": 600,
+    "height": 330,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactMarginForecast"
+                    }
+                  },
+                  "Property": "day"
+                }
+              },
+              "queryRef": "FactMarginForecast.day",
+              "nativeQueryRef": "day"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactMarginForecast"
+                    }
+                  },
+                  "Property": "Margin Outflow Mean"
+                }
+              },
+              "queryRef": "FactMarginForecast.Margin Outflow Mean",
+              "nativeQueryRef": "Margin Outflow Mean"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactMarginForecast"
+                    }
+                  },
+                  "Property": "Margin Outflow 95"
+                }
+              },
+              "queryRef": "FactMarginForecast.Margin Outflow 95",
+              "nativeQueryRef": "Margin Outflow 95"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactMarginForecast"
+                    }
+                  },
+                  "Property": "Margin Outflow 99"
+                }
+              },
+              "queryRef": "FactMarginForecast.Margin Outflow 99",
+              "nativeQueryRef": "Margin Outflow 99"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Margin forecast: cumulative outflow over 10 days (EUR)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

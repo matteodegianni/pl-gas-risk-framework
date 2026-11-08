@@ -1,4 +1,5 @@
 arch==8.0.0
+jsonschema==4.25.1
 holidays==0.108
 matplotlib==3.11.2
 numpy==2.5.4

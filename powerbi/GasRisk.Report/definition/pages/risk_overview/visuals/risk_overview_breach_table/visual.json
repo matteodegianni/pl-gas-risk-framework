@@ -1,0 +1,88 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "risk_overview_breach_table",
+  "position": {
+    "x": 860,
+    "y": 470,
+    "z": 7,
+    "width": 400,
+    "height": 240,
+    "tabOrder": 7
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimLimit"
+                    }
+                  },
+                  "Property": "limit_name"
+                }
+              },
+              "queryRef": "DimLimit.limit_name",
+              "nativeQueryRef": "limit_name"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactLimitUtilisation"
+                    }
+                  },
+                  "Property": "Breach Days"
+                }
+              },
+              "queryRef": "FactLimitUtilisation.Breach Days",
+              "nativeQueryRef": "Breach Days"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactLimitUtilisation"
+                    }
+                  },
+                  "Property": "Amber Days"
+                }
+              },
+              "queryRef": "FactLimitUtilisation.Amber Days",
+              "nativeQueryRef": "Amber Days"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Breach and amber days'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

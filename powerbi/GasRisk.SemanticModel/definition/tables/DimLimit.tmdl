@@ -1,0 +1,61 @@
+table DimLimit
+	lineageTag: b66a3520-5644-5a0f-aba2-6742c954457b
+
+	column limit_key
+		dataType: string
+		lineageTag: e78f09bb-90cc-51e3-b6a1-5a232e61e5f5
+		summarizeBy: none
+		sourceColumn: limit_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column limit_name
+		dataType: string
+		lineageTag: 770df61e-5cdd-5966-af1c-0e30ce95d44a
+		summarizeBy: none
+		sourceColumn: limit_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column limit_value
+		dataType: double
+		lineageTag: e667fa1e-326a-5943-9c70-0fe64bbbea0a
+		summarizeBy: sum
+		sourceColumn: limit_value
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit
+		dataType: string
+		lineageTag: 8962ceca-12fc-5081-a34b-589e5ee93470
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column amber_threshold
+		dataType: double
+		lineageTag: 273ce73d-f2fc-54e3-8846-ba1c957f6df3
+		summarizeBy: sum
+		sourceColumn: amber_threshold
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 8bd40898-5a5e-5692-9b97-26a6da6205f6
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimLimit = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("dim_limit"),
+				    Typed = Table.TransformColumnTypes(Source, {{"limit_key", type text}, {"limit_name", type text}, {"limit_value", type number}, {"unit", type text}, {"amber_threshold", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

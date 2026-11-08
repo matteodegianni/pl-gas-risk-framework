@@ -1,0 +1,60 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "stress_margin_line_card",
+  "position": {
+    "x": 660,
+    "y": 540,
+    "z": 6,
+    "width": 600,
+    "height": 100,
+    "tabOrder": 6
+  },
+  "visual": {
+    "visualType": "card",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactMarginForecast"
+                    }
+                  },
+                  "Property": "Buffer Over Credit Line"
+                }
+              },
+              "queryRef": "FactMarginForecast.Buffer Over Credit Line",
+              "nativeQueryRef": "Buffer Over Credit Line"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Buffer as a share of the bank credit line'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

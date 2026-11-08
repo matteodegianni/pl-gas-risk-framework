@@ -1,0 +1,137 @@
+table FactCredit
+	lineageTag: 00322240-8f32-5332-8379-8c4e3dfe212f
+
+	measure 'Current Exposure' = SUM ( FactCredit[ce_eur] )
+		formatString: #,0
+		lineageTag: 00e35af5-97c5-59d3-af2f-813c31600a8b
+
+	measure 'Peak PFE 95' = SUM ( FactCredit[peak_pfe_95_eur] )
+		formatString: #,0
+		lineageTag: 90526b13-8a9b-5b42-802d-d1b9b501df91
+
+	measure 'PFE Limit' = SUM ( FactCredit[pfe_limit_eur] )
+		formatString: #,0
+		lineageTag: 4cb80482-313f-5871-8fd2-3fbdea616e64
+
+	measure 'Credit Limit Utilisation' = MAX ( FactCredit[utilisation] )
+		formatString: 0.00
+		lineageTag: e3962ace-95cf-58e6-86aa-9f4a27bcc5ef
+
+	measure 'Counterparties In Breach' = COUNTROWS ( FILTER ( FactCredit, FactCredit[status] = "breach" ) )
+		formatString: 0
+		lineageTag: 96be54bf-3f35-5df6-8cbf-11f1fa479b89
+
+	column counterparty
+		dataType: string
+		lineageTag: 2b9bf6fa-8664-583c-8173-c3a2c7b6a0b2
+		summarizeBy: none
+		sourceColumn: counterparty
+
+		annotation SummarizationSetBy = Automatic
+
+	column ce_eur
+		dataType: double
+		lineageTag: c48bcc41-94f7-56b4-a373-7186128085bb
+		summarizeBy: sum
+		sourceColumn: ce_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column epe_12m_eur
+		dataType: double
+		lineageTag: 2957642e-9db3-51c2-9656-b08c7186c749
+		summarizeBy: sum
+		sourceColumn: epe_12m_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column peak_ee_eur
+		dataType: double
+		lineageTag: 0c25799e-2606-5da1-b1a0-fa3d2ef3e84f
+		summarizeBy: sum
+		sourceColumn: peak_ee_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column peak_pfe_95_eur
+		dataType: double
+		lineageTag: 57f6bb70-0725-5651-ad18-9d0d34832b41
+		summarizeBy: sum
+		sourceColumn: peak_pfe_95_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column peak_pfe_97_5_eur
+		dataType: double
+		lineageTag: 12fbae61-b887-5e15-b5fd-e52c6534fcc1
+		summarizeBy: sum
+		sourceColumn: peak_pfe_97_5_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_of_peak_pfe
+		dataType: int64
+		lineageTag: a46c1eab-82cc-597a-845a-082ee2606170
+		summarizeBy: sum
+		sourceColumn: month_of_peak_pfe
+
+		annotation SummarizationSetBy = Automatic
+
+	column netting_benefit_peak_ee
+		dataType: double
+		lineageTag: ccb3878b-ef09-51e1-953d-f6c4a9b966d5
+		summarizeBy: sum
+		sourceColumn: netting_benefit_peak_ee
+
+		annotation SummarizationSetBy = Automatic
+
+	column pfe_limit_eur
+		dataType: double
+		lineageTag: bf3d0e07-fece-5618-b0b7-ed4c5e16ca95
+		summarizeBy: sum
+		sourceColumn: pfe_limit_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column utilisation
+		dataType: double
+		lineageTag: 699ddd6f-3dcf-5e48-9977-0e735b60101a
+		summarizeBy: sum
+		sourceColumn: utilisation
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: fddd3d8a-b747-57ed-91c7-c5400c347e11
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column peak_pfe_95_pln
+		dataType: double
+		lineageTag: 4525ed76-2d47-5ccf-8e53-e87880bc7e0b
+		summarizeBy: sum
+		sourceColumn: peak_pfe_95_pln
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: b15c961e-60b0-53bd-b40a-43cee8d858d0
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactCredit = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_credit"),
+				    Typed = Table.TransformColumnTypes(Source, {{"counterparty", type text}, {"ce_eur", type number}, {"epe_12m_eur", type number}, {"peak_ee_eur", type number}, {"peak_pfe_95_eur", type number}, {"peak_pfe_97_5_eur", type number}, {"month_of_peak_pfe", Int64.Type}, {"netting_benefit_peak_ee", type number}, {"pfe_limit_eur", type number}, {"utilisation", type number}, {"status", type text}, {"peak_pfe_95_pln", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

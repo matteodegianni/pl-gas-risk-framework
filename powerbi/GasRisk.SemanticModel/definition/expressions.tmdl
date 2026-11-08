@@ -1,0 +1,17 @@
+expression DataFolder = "https://raw.githubusercontent.com/matteodegianni/pl-gas-risk-framework/master/exports/" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 8566c27a-1b79-51af-b970-1a2682b554b1
+
+	annotation PBI_ResultType = Text
+
+expression fnLoadCsv =
+		(name as text) as table =>
+		let
+		    Path = DataFolder & name & ".csv",
+		    Raw = if Text.StartsWith(DataFolder, "http") then Web.Contents(Path) else File.Contents(Path),
+		    Csv = Csv.Document(Raw, [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+		    Promoted = Table.PromoteHeaders(Csv, [PromoteAllScalars = true])
+		in
+		    Promoted
+	lineageTag: da9dada2-fdbb-50d7-9a0b-b31d7089e7c1
+
+	annotation PBI_ResultType = Function

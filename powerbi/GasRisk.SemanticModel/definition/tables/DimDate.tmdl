@@ -1,0 +1,88 @@
+table DimDate
+	lineageTag: df8c3118-07d5-55c1-a081-6e9c030ea4ea
+	dataCategory: Time
+
+	column date
+		dataType: dateTime
+		isKey
+		formatString: yyyy-mm-dd
+		lineageTag: f9c5cd56-9306-5be0-bd60-e066b1027acc
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column year
+		dataType: int64
+		lineageTag: 694bb1a8-5f38-5a03-92ea-78f9a1ef5bb6
+		summarizeBy: none
+		sourceColumn: year
+
+		annotation SummarizationSetBy = Automatic
+
+	column quarter
+		dataType: string
+		lineageTag: c3bab5a2-8091-55b1-a0d2-c516bb59c91b
+		summarizeBy: none
+		sourceColumn: quarter
+
+		annotation SummarizationSetBy = Automatic
+
+	column month
+		dataType: int64
+		lineageTag: 8562f99f-02be-59dc-b9c1-f71eabb910f7
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+	column month_name
+		dataType: string
+		lineageTag: c2037ef0-ba55-5762-a68d-7e4ea87b6d63
+		summarizeBy: none
+		sourceColumn: month_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column year_month
+		dataType: string
+		lineageTag: 67dcb0a7-f6c3-519e-a251-ca605b377a00
+		summarizeBy: none
+		sourceColumn: year_month
+
+		annotation SummarizationSetBy = Automatic
+
+	column weekday
+		dataType: string
+		lineageTag: 715cfd64-4024-5042-9087-ecb1db944436
+		summarizeBy: none
+		sourceColumn: weekday
+
+		annotation SummarizationSetBy = Automatic
+
+	column is_weekend
+		dataType: int64
+		lineageTag: da1b8b69-3326-5d89-9801-82c3fe6bae24
+		summarizeBy: none
+		sourceColumn: is_weekend
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: dfbbc337-0c53-5070-a4e5-6128e6b5fde5
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimDate = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("dim_date"),
+				    Typed = Table.TransformColumnTypes(Source, {{"date", type date}, {"year", Int64.Type}, {"quarter", type text}, {"month", Int64.Type}, {"month_name", type text}, {"year_month", type text}, {"weekday", type text}, {"is_weekend", Int64.Type}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

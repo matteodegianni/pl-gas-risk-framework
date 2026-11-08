@@ -1,0 +1,78 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "stress_margin_mstress_bar",
+  "position": {
+    "x": 20,
+    "y": 430,
+    "z": 5,
+    "width": 620,
+    "height": 280,
+    "tabOrder": 5
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimScenario"
+                    }
+                  },
+                  "Property": "scenario"
+                }
+              },
+              "queryRef": "DimScenario.scenario",
+              "nativeQueryRef": "scenario"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactMarginStress"
+                    }
+                  },
+                  "Property": "Stress Margin Call"
+                }
+              },
+              "queryRef": "FactMarginStress.Stress Margin Call",
+              "nativeQueryRef": "Stress Margin Call"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Stress margin calls (EUR)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

@@ -1,0 +1,29 @@
+model Model
+	culture: en-US
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-US
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation PBI_QueryOrder = ["DataFolder", "fnLoadCsv", "DimDate", "DimMethod", "DimRiskFactor", "DimLimit", "DimDriver", "DimScenario", "DimCounterparty", "FactVaR", "FactBacktest", "FactLimitUtilisation", "FactRiskContribution", "FactStress", "FactMarginForecast", "FactMarginStress", "FactAttribution", "FactCredit", "FactCreditProfile"]
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+ref table DimDate
+ref table DimMethod
+ref table DimRiskFactor
+ref table DimLimit
+ref table DimDriver
+ref table DimScenario
+ref table DimCounterparty
+ref table FactVaR
+ref table FactBacktest
+ref table FactLimitUtilisation
+ref table FactRiskContribution
+ref table FactStress
+ref table FactMarginForecast
+ref table FactMarginStress
+ref table FactAttribution
+ref table FactCredit
+ref table FactCreditProfile

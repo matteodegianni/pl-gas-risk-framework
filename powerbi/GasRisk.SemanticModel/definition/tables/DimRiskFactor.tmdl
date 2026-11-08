@@ -1,0 +1,53 @@
+table DimRiskFactor
+	lineageTag: d2aa46ed-c392-5993-b943-7139462d3d9e
+
+	column factor_key
+		dataType: string
+		lineageTag: fd6c83cc-5738-5519-80c2-26cc820e9ed3
+		summarizeBy: none
+		sourceColumn: factor_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column factor_name
+		dataType: string
+		lineageTag: 0457f898-e916-5439-bddd-94c66bd2cdd9
+		summarizeBy: none
+		sourceColumn: factor_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column unit
+		dataType: string
+		lineageTag: 312655b3-3269-5437-8367-5206587e043e
+		summarizeBy: none
+		sourceColumn: unit
+
+		annotation SummarizationSetBy = Automatic
+
+	column source
+		dataType: string
+		lineageTag: 6776baf3-f936-5348-a879-6e7de1c356b5
+		summarizeBy: none
+		sourceColumn: source
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 1816653a-8de2-535c-802e-453a3b63a330
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition DimRiskFactor = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("dim_risk_factor"),
+				    Typed = Table.TransformColumnTypes(Source, {{"factor_key", type text}, {"factor_name", type text}, {"unit", type text}, {"source", type text}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

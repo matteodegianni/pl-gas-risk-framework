@@ -1,0 +1,24 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/report/1.0.0/schema.json",
+  "themeCollection": {
+    "customTheme": {
+      "name": "GasRiskTheme.json",
+      "reportVersionAtImport": "5.55",
+      "type": "RegisteredResources"
+    }
+  },
+  "layoutOptimization": "None",
+  "resourcePackages": [
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "GasRiskTheme.json",
+          "path": "GasRiskTheme.json",
+          "type": "CustomTheme"
+        }
+      ]
+    }
+  ]
+}

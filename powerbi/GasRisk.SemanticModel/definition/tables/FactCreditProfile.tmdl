@@ -1,0 +1,81 @@
+table FactCreditProfile
+	lineageTag: 89830c94-bf20-5115-a554-1f4d30564f39
+
+	measure 'Expected Exposure' = SUM ( FactCreditProfile[ee_eur] )
+		formatString: #,0
+		lineageTag: c229759b-83c5-5419-a422-f0892ba617a4
+
+	measure 'PFE 95' = SUM ( FactCreditProfile[pfe_95_eur] )
+		formatString: #,0
+		lineageTag: 50f43f80-7b9a-5678-8416-a93696e5c8bd
+
+	measure 'PFE 97.5' = SUM ( FactCreditProfile[pfe_97_5_eur] )
+		formatString: #,0
+		lineageTag: cafc313a-07b1-5798-9660-9d7f202d0c98
+
+	column counterparty
+		dataType: string
+		lineageTag: a7fb72ec-d524-5a6a-beb9-40ba6ce95266
+		summarizeBy: none
+		sourceColumn: counterparty
+
+		annotation SummarizationSetBy = Automatic
+
+	column month
+		dataType: int64
+		lineageTag: b6504067-0d20-5b0a-9841-9c445394ce07
+		summarizeBy: none
+		sourceColumn: month
+
+		annotation SummarizationSetBy = Automatic
+
+	column ee_eur
+		dataType: double
+		lineageTag: 2b054a94-1a32-5ac0-a7e4-248edea06b0e
+		summarizeBy: sum
+		sourceColumn: ee_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column ee_no_netting_eur
+		dataType: double
+		lineageTag: 321197ae-8cc4-5b91-9732-7a7714cb4dce
+		summarizeBy: sum
+		sourceColumn: ee_no_netting_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column pfe_95_eur
+		dataType: double
+		lineageTag: 88050512-b50e-5fdc-8c59-9c1ca37682fe
+		summarizeBy: sum
+		sourceColumn: pfe_95_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column pfe_97_5_eur
+		dataType: double
+		lineageTag: 96b52a4c-fb61-5478-a05e-868a047e992d
+		summarizeBy: sum
+		sourceColumn: pfe_97_5_eur
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 3efad84d-3d6e-5854-9a9c-ef645d9eef39
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactCreditProfile = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_credit_profile"),
+				    Typed = Table.TransformColumnTypes(Source, {{"counterparty", type text}, {"month", Int64.Type}, {"ee_eur", type number}, {"ee_no_netting_eur", type number}, {"pfe_95_eur", type number}, {"pfe_97_5_eur", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

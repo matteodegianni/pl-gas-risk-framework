@@ -1,0 +1,102 @@
+table FactLimitUtilisation
+	lineageTag: dee0fa51-d04f-5885-aa40-4271790bc999
+
+	measure Utilisation = AVERAGE ( FactLimitUtilisation[utilisation] )
+		formatString: 0.00%
+		lineageTag: ebb800b9-04f4-5bb0-b4e0-5de41cfcc347
+
+	measure 'Latest Utilisation' =
+			VAR d = CALCULATE ( MAX ( FactLimitUtilisation[date] ), ALL ( FactLimitUtilisation ), ALL ( DimDate ) )
+			RETURN CALCULATE ( [Utilisation], ALL ( DimDate ), FactLimitUtilisation[date] = d )
+		formatString: 0.00%
+		lineageTag: b955d5d3-4d70-51bb-87ce-3c60a97949dc
+
+	measure 'Breach Days' = SUM ( FactLimitUtilisation[breach] )
+		formatString: 0
+		lineageTag: 3d9c2c99-43ec-5d0a-934d-773fdc897d90
+
+	measure 'Amber Days' = COUNTROWS ( FILTER ( FactLimitUtilisation, FactLimitUtilisation[status] = "amber" ) )
+		formatString: 0
+		lineageTag: 72313e32-c2b2-5b83-9238-2a9ca1535e6b
+
+	measure 'Limits In Breach Today' =
+			VAR d = CALCULATE ( MAX ( FactLimitUtilisation[date] ), ALL ( FactLimitUtilisation ), ALL ( DimDate ) )
+			RETURN CALCULATE ( SUM ( FactLimitUtilisation[breach] ), ALL ( DimDate ), FactLimitUtilisation[date] = d )
+		formatString: 0
+		lineageTag: c49fa219-cfd5-5717-9ce5-9adc7de91867
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 0cd2ff37-5115-56b6-bfc7-a16d23ae198c
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column limit_key
+		dataType: string
+		lineageTag: d1149a78-79ce-52a5-ab05-239ee1fcd0b6
+		summarizeBy: none
+		sourceColumn: limit_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column measure
+		dataType: double
+		lineageTag: ab89c7ea-331f-5bfb-bda9-ca224f0ce4f7
+		summarizeBy: sum
+		sourceColumn: measure
+
+		annotation SummarizationSetBy = Automatic
+
+	column utilisation
+		dataType: double
+		lineageTag: 6baa771d-7ea1-5fb0-ad95-e227f85ae03e
+		summarizeBy: sum
+		sourceColumn: utilisation
+
+		annotation SummarizationSetBy = Automatic
+
+	column status
+		dataType: string
+		lineageTag: 5785ded4-d63b-5efe-9a18-e552bf58fa5e
+		summarizeBy: none
+		sourceColumn: status
+
+		annotation SummarizationSetBy = Automatic
+
+	column breach
+		dataType: int64
+		lineageTag: 5a77511d-b6ec-50e1-b092-30b877ab4b7d
+		summarizeBy: sum
+		sourceColumn: breach
+
+		annotation SummarizationSetBy = Automatic
+
+	column limit_value
+		dataType: double
+		lineageTag: 0cc7da66-015a-5482-bafc-bec52999c91a
+		summarizeBy: sum
+		sourceColumn: limit_value
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: ad36f33b-c86c-5e50-be77-82d968c0032f
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactLimitUtilisation = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_limit_utilisation"),
+				    Typed = Table.TransformColumnTypes(Source, {{"date", type date}, {"limit_key", type text}, {"measure", type number}, {"utilisation", type number}, {"status", type text}, {"breach", Int64.Type}, {"limit_value", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

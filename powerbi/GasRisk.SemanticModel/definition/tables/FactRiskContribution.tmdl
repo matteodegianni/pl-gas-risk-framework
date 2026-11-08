@@ -1,0 +1,54 @@
+table FactRiskContribution
+	lineageTag: beb0b815-f058-5ace-849b-011749c2f49e
+
+	measure 'VaR Contribution' = SUM ( FactRiskContribution[var99_contribution_pln] )
+		formatString: #,0
+		lineageTag: 0c9d7d89-3a7a-5706-89e6-3b3cf5d771af
+
+	measure 'VaR Contribution Share' = DIVIDE ( [VaR Contribution], CALCULATE ( [VaR Contribution], ALL ( DimRiskFactor ) ) )
+		formatString: 0.0%
+		lineageTag: 6bddacde-4126-5608-bf1d-620de747478a
+
+	column date
+		dataType: dateTime
+		formatString: yyyy-mm-dd
+		lineageTag: 2e6fa6c1-f068-5669-b868-50718ec16e21
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation SummarizationSetBy = Automatic
+
+	column factor_key
+		dataType: string
+		lineageTag: 1716f9a6-65db-5d86-84b6-eb74f4b24189
+		summarizeBy: none
+		sourceColumn: factor_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column var99_contribution_pln
+		dataType: double
+		lineageTag: d2727d98-315f-58aa-920c-a60d482701b9
+		summarizeBy: sum
+		sourceColumn: var99_contribution_pln
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 84150d00-366a-5224-95cd-3d64c495d6e3
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactRiskContribution = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_risk_contribution"),
+				    Typed = Table.TransformColumnTypes(Source, {{"date", type date}, {"factor_key", type text}, {"var99_contribution_pln", type number}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

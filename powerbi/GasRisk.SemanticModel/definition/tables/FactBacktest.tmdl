@@ -1,0 +1,129 @@
+table FactBacktest
+	lineageTag: 7bf8bffb-b855-597c-8b93-9361e0b81eaa
+
+	measure 'Observed Exceptions' = SUM ( FactBacktest[observed] )
+		formatString: 0
+		lineageTag: 6d9bccee-e5d2-5dd7-ad6c-e6961a8144d2
+
+	measure 'Expected Exceptions' = SUM ( FactBacktest[expected] )
+		formatString: 0.0
+		lineageTag: a587e40b-9bc9-5c58-8c09-73d6dfedaa20
+
+	measure 'Kupiec p' = AVERAGE ( FactBacktest[p_pof] )
+		formatString: 0.0000
+		lineageTag: 80638522-04c0-5318-a53d-feadace26e22
+
+	measure 'Conditional Coverage p' = AVERAGE ( FactBacktest[p_cc] )
+		formatString: 0.0000
+		lineageTag: 4061f5cc-7e46-59ee-a2fb-540cefcf63a3
+
+	measure 'Tests Passed' = COUNTROWS ( FILTER ( FactBacktest, FactBacktest[pass_cc] = TRUE () ) )
+		formatString: 0
+		lineageTag: 0cf1ae14-1c36-5545-ae63-af9d4402740b
+
+	column method_key
+		dataType: string
+		lineageTag: 8156fed2-1df0-55b8-9808-85f49d782394
+		summarizeBy: none
+		sourceColumn: method_key
+
+		annotation SummarizationSetBy = Automatic
+
+	column level
+		dataType: double
+		lineageTag: fa16f0e4-4528-5e65-8a40-00d990f12fb6
+		summarizeBy: sum
+		sourceColumn: level
+
+		annotation SummarizationSetBy = Automatic
+
+	column n
+		dataType: int64
+		lineageTag: 3be1a74e-abcc-5525-826d-76df7b2c5a8b
+		summarizeBy: sum
+		sourceColumn: n
+
+		annotation SummarizationSetBy = Automatic
+
+	column expected
+		dataType: double
+		lineageTag: f057672e-f256-5829-96f6-40a578d019a7
+		summarizeBy: sum
+		sourceColumn: expected
+
+		annotation SummarizationSetBy = Automatic
+
+	column observed
+		dataType: int64
+		lineageTag: f1a01806-b30f-577f-85bd-a6c54dd8c32a
+		summarizeBy: sum
+		sourceColumn: observed
+
+		annotation SummarizationSetBy = Automatic
+
+	column p_pof
+		dataType: double
+		lineageTag: 48ba112f-4482-55fa-8e4e-6ccc3f29479f
+		summarizeBy: sum
+		sourceColumn: p_pof
+
+		annotation SummarizationSetBy = Automatic
+
+	column p_ind
+		dataType: double
+		lineageTag: d6b5080b-ab43-5766-8336-1b049eb2fd20
+		summarizeBy: sum
+		sourceColumn: p_ind
+
+		annotation SummarizationSetBy = Automatic
+
+	column p_cc
+		dataType: double
+		lineageTag: 6eab848f-3b9e-57ab-bb3c-8d02da53e8e7
+		summarizeBy: sum
+		sourceColumn: p_cc
+
+		annotation SummarizationSetBy = Automatic
+
+	column pass_pof
+		dataType: boolean
+		lineageTag: 10b59fcc-0cf3-589b-bd2e-ae3189191fc8
+		summarizeBy: none
+		sourceColumn: pass_pof
+
+		annotation SummarizationSetBy = Automatic
+
+	column pass_ind
+		dataType: boolean
+		lineageTag: 9cd49ed9-331a-5cb6-92e7-3d75fce99547
+		summarizeBy: none
+		sourceColumn: pass_ind
+
+		annotation SummarizationSetBy = Automatic
+
+	column pass_cc
+		dataType: boolean
+		lineageTag: bbb289be-21cf-5d5e-85ad-dac295fc9ffd
+		summarizeBy: none
+		sourceColumn: pass_cc
+
+		annotation SummarizationSetBy = Automatic
+
+	column data_label
+		dataType: string
+		lineageTag: 7923cbc5-2e6c-507c-8d88-241fb9c75850
+		summarizeBy: none
+		sourceColumn: data_label
+
+		annotation SummarizationSetBy = Automatic
+
+	partition FactBacktest = m
+		mode: import
+		source =
+				let
+				    Source = fnLoadCsv("fact_backtest"),
+				    Typed = Table.TransformColumnTypes(Source, {{"method_key", type text}, {"level", type number}, {"n", Int64.Type}, {"expected", type number}, {"observed", Int64.Type}, {"p_pof", type number}, {"p_ind", type number}, {"p_cc", type number}, {"pass_pof", type logical}, {"pass_ind", type logical}, {"pass_cc", type logical}, {"data_label", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table

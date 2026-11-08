@@ -1,0 +1,78 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "pnl_attribution_driver_bar",
+  "position": {
+    "x": 20,
+    "y": 130,
+    "z": 2,
+    "width": 560,
+    "height": 300,
+    "tabOrder": 2
+  },
+  "visual": {
+    "visualType": "clusteredBarChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "DimDriver"
+                    }
+                  },
+                  "Property": "driver_name"
+                }
+              },
+              "queryRef": "DimDriver.driver_name",
+              "nativeQueryRef": "driver_name"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactAttribution"
+                    }
+                  },
+                  "Property": "Attributed P&L"
+                }
+              },
+              "queryRef": "FactAttribution.Attributed P&L",
+              "nativeQueryRef": "Attributed P&L"
+            }
+          ]
+        }
+      }
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'P&L by driver (PLN)'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

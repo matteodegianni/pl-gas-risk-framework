@@ -1,0 +1,16 @@
+{
+  "name": "GasRiskTheme",
+  "dataColors": [
+    "#1F4E79",
+    "#C55A11",
+    "#548235",
+    "#7F6000",
+    "#7030A0",
+    "#2E75B6",
+    "#BF9000",
+    "#A5A5A5"
+  ],
+  "background": "#FFFFFF",
+  "foreground": "#252423",
+  "tableAccent": "#1F4E79"
+}
