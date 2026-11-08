@@ -272,3 +272,8 @@ credit:
     - {grade: 4, label: "BB equivalent", min_score: 2.00, pfe_limit_eur: 4000000}
     - {grade: 5, label: "B equivalent", min_score: 1.25, pfe_limit_eur: 1500000}
     - {grade: 6, label: "CCC or below", min_score: 0.00, pfe_limit_eur: 0}
+
+memo:
+  # Stage 17: hedge recommendation rule. Among the futures strategies with the EUR forward, take the highest 99% VaR
+  # reduction over all 21-day windows; if another ratio is within this tolerance, prefer the lower ratio (less margin).
+  var_reduction_tolerance: 0.01
