@@ -1,0 +1,46 @@
+id,area,check,passed,severity,detail
+IN-panel.csv-rows,input,at least 1500 rows,True,error,2321
+IN-panel.csv-date,input,"valid, unique, increasing dates",True,error,2017-10-23 to 2026-11-06
+IN-03,input,no calendar gap above 5 trading days (8 calendar days),True,error,max gap 5 days
+IN-staleness,input,panel is fresh,True,warning,2 days old
+IN-panel.csv-ttf_c2-nulls,input,null share <= 0.0,True,error,0.0000
+IN-panel.csv-ttf_c2-range,input,"values in [1, 1000]",True,error,0 out of range
+IN-panel.csv-ttf_risk_ret-nulls,input,null share <= 0.01,True,error,0.0009
+IN-panel.csv-ttf_risk_ret-range,input,"values in [-0.8, 0.8]",True,error,0 out of range
+IN-panel.csv-tge_pln-nulls,input,null share <= 0.0,True,error,0.0000
+IN-panel.csv-tge_pln-range,input,"values in [5, 5000]",True,error,0 out of range
+IN-panel.csv-tge_eur-nulls,input,null share <= 0.0,True,error,0.0000
+IN-panel.csv-tge_eur-range,input,"values in [1, 1200]",True,error,0 out of range
+IN-panel.csv-eurpln-nulls,input,null share <= 0.0,True,error,0.0000
+IN-panel.csv-eurpln-range,input,"values in [3.5, 6.0]",True,error,0 out of range
+IN-panel.csv-eurpln_ret-nulls,input,null share <= 0.01,True,error,0.0004
+IN-panel.csv-eurpln_ret-range,input,"values in [-0.1, 0.1]",True,error,0 out of range
+IN-01,input,tge_eur = tge_pln / eurpln,True,error,max error 0.00e+00
+IN-garch_conditional_vol.csv-date,input,"valid, unique, increasing dates",True,error,2017-10-23 to 2026-11-06
+IN-garch_conditional_vol.csv-ttf_t-nulls,input,null share <= 0.01,True,error,0.0030
+IN-garch_conditional_vol.csv-ttf_t-range,input,"values in [0, 50]",True,error,0 out of range
+IN-garch_std_resid.csv-date,input,"valid, unique, increasing dates",True,error,2017-10-24 to 2026-11-06
+IN-garch_std_resid.csv-ttf_t-nulls,input,null share <= 0.01,True,error,0.0026
+IN-garch_std_resid.csv-ttf_t-range,input,"values in [-30, 30]",True,error,0 out of range
+IN-02,input,Stage 1 data quality log exists,True,error,data_quality_log.csv
+CFG-book.q_open_mwh,config,book.q_open_mwh in range,True,error,500000.0
+CFG-book.ttf_hedge_ratio,config,book.ttf_hedge_ratio in range,True,error,0.7
+CFG-book.fx_hedge_ratio,config,book.fx_hedge_ratio in range,True,error,0.7
+CFG-limits.amber_threshold,config,limits.amber_threshold in range,True,error,0.8
+AC-01,completeness,all daily output tables exist,True,error,all present
+AC-02,freshness,VaR as-of date equals the last panel date,True,error,2026-11-06 vs 2026-11-06
+AC-03,VaR,VaR and ES positive and finite for every method,True,error,
+AC-04,VaR,VaR 99% >= VaR 95% and ES 97.5% >= VaR 99% x 0.9,True,error,
+AC-05,backtest,official method garch_t_gauss passes conditional coverage at 95% and 99% (p > 0.05),True,error,min p 0.0530
+AC-06,backtest,official method not in the red traffic-light zone,True,error,green
+AC-07,limits,utilisation = measure / limit,True,error,
+AC-08,attribution,attribution components sum to total P&L,True,error,residual 6.52e-09 PLN
+AC-09,pricing,put-call parity error below 1e-10 of F,True,error,8.32e-17
+AC-10,pricing,reference examples match published values,True,error,
+AC-11,pricing,finite-difference Greeks within 1e-4 relative,True,error,max 3.53e-08
+AC-12,hedging,ineffectiveness shares sum to 1,True,error,1.000000000000
+AC-13,margin,IM and 10-day buffer positive; buffer >= 1-day 99% call,True,error,
+AC-14,margin,FHS IM within 10% of the closed-form approximation,True,error,0.9983
+AC-15,credit,PFE 97.5% >= PFE 95% >= 0 and netted EE <= EE without netting,True,error,
+AC-16,credit,breach status consistent with utilisation,True,error,
+AC-17,reporting,breaches present today are reported (information),True,info,limits in breach: 2; counterparties in breach: 1

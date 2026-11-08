@@ -45,12 +45,14 @@ src/gasrisk/
   credit.py               Stage 13: CE, EE, PFE by Monte Carlo, synthetic scorecard, credit limits
   credit_report.py        generated Stage 13 report
   doccheck.py             checks that every number in a document appears in the generated outputs or config
+  validation.py           Stage 15: input validation (schema) and post-deployment output validation
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
 docs/                     brief, interview notes, handoff; later: risk framework, model cards, memo
 notebooks/                01_core_market_risk.ipynb: Phase 1 story from the committed result tables
-handover/ airflow/        later stages
+handover/                 Stage 15: input data spec and schema, acceptance criteria, output validation script
+airflow/                  later stages
 ```
 
 ## How to run
@@ -222,6 +224,13 @@ Generated results: [outputs/stage13_report.md](outputs/stage13_report.md). Count
 ## Stage 14 - risk framework
 
 [docs/risk_framework.md](docs/risk_framework.md): risk taxonomy, methodologies, limit structure and thresholds, escalation, model validation, current risk position, assumptions and limitations, based only on what Stages 1-13 build. Every number in it, and in the README, memo, model cards and interview notes, is checked against the generated outputs by `python -m gasrisk.doccheck` and `tests/test_docs.py`.
+
+## Stage 15 - model handover package
+
+- **Model cards** ([docs/model_cards/](docs/model_cards/README.md)): one per model (forecasting, volatility, VaR and ES, stress, attribution, Black-76, hedging, margin, credit) with purpose, inputs, method, validation evidence, limitations and ownership.
+- **Input data specification** ([handover/input_data_spec.md](handover/input_data_spec.md)) and its machine-readable schema ([handover/input_schema.yaml](handover/input_schema.yaml)): sources, refresh, units, licences, validation rules.
+- **Acceptance criteria** ([handover/acceptance_criteria.md](handover/acceptance_criteria.md)): input criteria and 18 output criteria (completeness, freshness, VaR sanity, backtest, reconciliation, pricing identities, margin and credit consistency, export labelling).
+- **Output validation script**: `python handover/validate_outputs.py` runs every criterion, writes `outputs/validation_report.csv` and exits with code 1 on any error. On the current run all checks pass, with 2 exposure limits and 1 counterparty in breach reported as information.
 
 ## Licence
 
