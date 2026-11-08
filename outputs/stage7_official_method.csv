@@ -1,0 +1,2 @@
+method,reason
+garch_t_gauss,"passes conditional coverage at all levels (garch_t_gauss, hs); highest share of green 250-day windows among them (0.9431)"

@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility), 5 (VaR and ES) and 6 (VaR backtesting) complete.** Later stages are not built yet.
+> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility), 5 (VaR and ES), 6 (VaR backtesting) and 7 (limits) complete.** Later stages are not built yet.
 
 ## Repository layout
 
@@ -29,6 +29,8 @@ src/gasrisk/
   var_report.py           generated Stage 5 report and figure
   backtest.py             Stage 6: Kupiec, Christoffersen, Basel traffic light, ES check
   backtest_report.py      generated Stage 6 report and figure
+  limits.py               Stage 7: official VaR method, synthetic limits, utilisation, breach attribution
+  limits_report.py        generated Stage 7 report and figure
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -59,6 +61,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.volatility    # Stage 4
 .venv/bin/python -m gasrisk.var           # Stage 5, about 1 minute
 .venv/bin/python -m gasrisk.backtest      # Stage 6
+.venv/bin/python -m gasrisk.limits        # Stage 7
 ```
 
 ```bash
@@ -134,6 +137,15 @@ Generated results: [outputs/stage6_report.md](outputs/stage6_report.md).
 
 - Kupiec proportion-of-failures, Christoffersen independence and conditional coverage at 95% and 99% for all six Stage 5 methods; Basel traffic light on 99% VaR over 250-day windows; descriptive ES check on exception days.
 - Key findings (from the generated report): over 1,568 days, the normal and EWMA methods fail at 99% (30 exceptions against 15.68 expected each; conditional coverage p 0.0004 and 0.0048), consistent with the Stage 4 finding that normal tails are too thin. GARCH-t with both copulas and FHS pass at 99% (12, 11 and 10 exceptions), and FHS has every rolling 250-day window in the green zone. Historical simulation and GARCH-t with the Gaussian copula pass conditional coverage at both levels.
+
+## Stage 7 - limits and breach analysis
+
+Generated results: [outputs/stage7_report.md](outputs/stage7_report.md). Limits are **synthetic** management numbers.
+
+- **Official VaR method** chosen by rule from Stage 6: passes conditional coverage at both levels, highest share of green traffic-light windows (GARCH-t with Gaussian copula).
+- **Limits:** 99% VaR (PLN), open gas exposure value (unhedged volume x TGE in PLN), FX net open position (EUR); amber from 80%, breach above 100%; daily utilisation and breach episodes.
+- **Breach attribution:** Euler decomposition of the official VaR by risk factor (main contributor and largest increase since 20 days before the episode); exposure breaches split exactly into TGE price and EUR/PLN contributions.
+- Key findings (from the generated report): TGE is the main contributor in all 33 VaR breach episodes and accounts for 91% of today's 99% VaR (share 0.9108); today the synthetic book uses 73% of its VaR limit and breaches both value-based exposure limits (utilisation 1.0152 and 1.1556) because TGE prices have risen.
 
 ## Data sources and credits
 

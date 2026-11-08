@@ -142,6 +142,15 @@ var:
   copula_nu_grid: [3, 4, 5, 6, 7, 8, 10, 12, 15, 20, 30, 50]
   start_obs: 750                   # first forecast origin (same test start as Stages 3-4)
 
+limits:
+  # SYNTHETIC management limits (round numbers relative to the synthetic book; not fitted to the backtest).
+  official_method: auto            # auto = passes conditional coverage at 95% and 99%, highest share of green windows
+  var99_limit_pln: 25000000
+  open_gas_exposure_limit_pln: 60000000   # unhedged volume x TGE price in PLN
+  fx_net_open_limit_eur: 12000000         # EUR value of TGE purchases not covered by the EUR forward
+  amber_threshold: 0.80
+  driver_lookback_days: 20
+
 diagnostics:
   alpha: 0.05
   ljung_box_lags: [5, 10, 20]

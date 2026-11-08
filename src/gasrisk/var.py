@@ -231,9 +231,12 @@ def run_var(levels: pd.DataFrame, rets: pd.DataFrame, specs: dict, cfg_book: dic
             legs = pnl_legs(lv, R[pos + 1], pz)
             realised = {"pnl": float(legs["total"][0]), "pnl_tge": float(legs["tge"][0]),
                         "pnl_ttf": float(legs["ttf"][0]), "pnl_fx": float(legs["fx"][0])}
+        state = {"copula_nu": nu_c, "corr_tge_ttf": corr[0, 1], "corr_tge_fx": corr[0, 2], "corr_ttf_fx": corr[1, 2],
+                 **{f"sig_{f}": sig[i] for i, f in enumerate(FACTORS)}, **{f"mu_{f}": mu[i] for i, f in enumerate(FACTORS)},
+                 **{f"level_{f}": lv[f] for f in FACTORS}}
         for m in METHODS:
             rows.append({"origin": idx[pos], "target": idx[pos + 1] if pos + 1 < n else pd.NaT, "method": m,
-                         **out[m], **realised, "copula_nu": nu_c, "corr_tge_ttf": corr[0, 1]})
+                         **out[m], **realised, **state})
     return pd.DataFrame(rows)
 
 
