@@ -24,7 +24,7 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
   `gasrisk.data.build` (add `--offline` to reuse raw files), `gasrisk.diagnostics`, `gasrisk.forecasting`
   (5-10 min), `gasrisk.volatility`, `gasrisk.var` (1 min), `gasrisk.backtest`, `gasrisk.limits`, `gasrisk.stress`,
   `gasrisk.attribution`. Run as `.venv/bin/python -W ignore -m <module>`.
-- Tests: `.venv/bin/python -m pytest -W ignore` (93 passing at Stage 9).
+- Tests: `.venv/bin/python -m pytest -W ignore` (154 passing at Stage 18).
 
 ## Status
 
@@ -44,13 +44,20 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
 | 11 Hedging | aa5d303 | dollar-offset fails (29.1% pass), regression passes; basis carries 99.1% of ineffectiveness variance |
 | 12 Margin | ee93c18 | IM 3.68m EUR, 10-day buffer 7.09m EUR; liquidity risk is a TTF fall, not the P&L stress scenarios |
 | 13 Credit | 3fbc325 | CP04 breaches PFE limit; wrong-way risk documented and illustrated (EE 4.56x-5.92x in high-price paths) |
+| 14 Framework | 899a61f | docs/risk_framework.md; `gasrisk.doccheck` traces every document number to outputs |
+| 15 Handover | e7e762a | 9 model cards, input schema, 18 acceptance criteria, handover/validate_outputs.py |
+| 16 Pipeline | 6f13b7e, b33bd12 | one-command pipeline, Dockerfile, Airflow DAG, exports/, Power BI PBIP (validated offline, never opened in Desktop) |
+| 17 Memo | 45591df | docs/management_memo.md generated from tables; recommends TTF futures at 70% |
+| 18 Commentary | 3df9be1 | number-checked LLM commentary; committed run used the template (anthropic SDK not installed) |
 
 ## Next steps
 
 1. Public GitHub repository: https://github.com/matteodegianni/pl-gas-risk-framework (Phase 1 pushed; push
    later stages after each commit with `git push`).
 2. Phase 2 (Stages 10-13): done.
-3. Phase 3 (Stages 14-18): in progress (see git log for what is committed).
+3. Phase 3 (Stages 14-18): done.
+4. Open items for the user: open `powerbi/GasRisk.pbip` in Power BI Desktop and follow the first-open checklist in
+   `powerbi/README.md`; optionally `pip install anthropic` and run `python -m gasrisk.commentary` with credentials.
 
 ## Approved Phase 2 design
 
@@ -78,3 +85,7 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
 - No TGE forward curve: unhedged future purchases are valued at TGE day-ahead, so basis risk mixes location and tenor.
 - Specifications for the GARCH mean are selected on the full sample (first-window check reported).
 - Synthetic limits were set as round numbers relative to the synthetic book.
+- Option values use a volatility assumption (no free implied volatility); IM is a VaR proxy, not the ICE method.
+- Credit model treats exposure and default as independent (wrong-way risk documented, not modelled).
+- Power Query has no relative paths: DataFolder defaults to the GitHub exports URL; `powerbi/set_data_folder.py`
+  switches to the local clone.

@@ -4,7 +4,17 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phases 1 and 2 (Stages 1-13) complete.** Phase 3 (framework and delivery) in progress.
+> Status: **complete (Stages 1-18).** Positions, demand, limits, counterparties and the bank line are **synthetic**; market data are real and never committed.
+
+## Overview
+
+| Phase | Stages | What it delivers |
+|---|---|---|
+| 1 Core market risk | 1-9 | Data quality and alignment, diagnostics, forecasting, GARCH volatility, VaR and ES (six methods), backtesting, limits and breach attribution, stress testing, exact P&L attribution |
+| 2 Derivatives, margin, credit | 10-13 | Black-76 pricing of TTF options, hedge ratio and effectiveness with the basis explained, margin forecast and liquidity buffer, counterparty exposure with a scorecard and limits |
+| 3 Framework and delivery | 14-18 | Risk framework, model cards and handover package with an output validation script, one-command daily pipeline (Docker, Airflow), Power BI project, board memo, number-checked LLM commentary |
+
+Headline results (all from the generated reports): the official VaR model (GARCH-t with a Gaussian copula) passes conditional coverage at 95% and 99%; the TTF hedge cuts 21-day P&L variance by about half but crisis tail risk by only 12.5%, because the TGE-TTF location plus tenor basis carries 99.1% of hedge ineffectiveness; liquidity risk sits in a TTF collapse (stress margin call 17,864,382 EUR) rather than in the TGE spikes that drive P&L risk. Every number in the documents is checked against the generated outputs by `tests/test_docs.py`.
 
 ## Repository layout
 
