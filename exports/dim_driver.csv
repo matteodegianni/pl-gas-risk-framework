@@ -1,0 +1,8 @@
+driver_key,driver_name,driver_group,data_label
+plan_margin,Plan margin,plan,synthetic book on real market data
+volume_effect,Volume,volume,synthetic book on real market data
+price_effect_purchase,TGE purchase price,price,synthetic book on real market data
+price_effect_hedge,TTF hedge,price,synthetic book on real market data
+fx_effect_purchase,FX on purchases,fx,synthetic book on real market data
+fx_effect_hedge_translation,FX on hedge translation,fx,synthetic book on real market data
+fx_effect_forward,EUR forward,fx,synthetic book on real market data

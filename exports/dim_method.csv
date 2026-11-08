@@ -1,0 +1,7 @@
+method_key,method_name,is_official,data_label
+hs,Historical simulation,0,synthetic book on real market data
+normal,Parametric normal,0,synthetic book on real market data
+garch_t_gauss,"GARCH-t, Gaussian copula",1,synthetic book on real market data
+garch_t_tcop,"GARCH-t, Student-t copula",0,synthetic book on real market data
+fhs,Filtered historical simulation,0,synthetic book on real market data
+ewma,EWMA normal,0,synthetic book on real market data

@@ -1,0 +1,7 @@
+counterparty,type,weighted_score,grade,grade_label,pfe_limit_eur,data_label
+CP01,trading house (synthetic),4.2,2,A equivalent,12000000,synthetic book on real market data
+CP02,regional gas wholesaler (synthetic),2.8,3,BBB equivalent,8000000,synthetic book on real market data
+CP03,municipal utility (synthetic),3.6500000000000004,2,A equivalent,12000000,synthetic book on real market data
+CP04,independent gas trader (synthetic),1.25,5,B equivalent,1500000,synthetic book on real market data
+CP05,industrial gas consumer (synthetic),3.15,3,BBB equivalent,8000000,synthetic book on real market data
+CP06,integrated energy major (synthetic),4.3,1,AA equivalent,20000000,synthetic book on real market data

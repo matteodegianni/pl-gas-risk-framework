@@ -1,0 +1,8 @@
+.venv
+.git
+data
+exports
+powerbi
+notebooks
+**/__pycache__
+.pytest_cache

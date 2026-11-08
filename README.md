@@ -46,13 +46,18 @@ src/gasrisk/
   credit_report.py        generated Stage 13 report
   doccheck.py             checks that every number in a document appears in the generated outputs or config
   validation.py           Stage 15: input validation (schema) and post-deployment output validation
+  export.py               Stage 16: star-schema CSV exports for the dashboard (exports/)
+  pipeline.py             Stage 16: daily pipeline in one command (refresh to report)
+  daily_report.py         Stage 16: generated daily risk report
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
 docs/                     brief, interview notes, handoff; later: risk framework, model cards, memo
 notebooks/                01_core_market_risk.ipynb: Phase 1 story from the committed result tables
 handover/                 Stage 15: input data spec and schema, acceptance criteria, output validation script
-airflow/                  later stages
+airflow/dags/             Stage 16: Airflow DAG for the daily run
+exports/                  Stage 16: dashboard CSVs (synthetic book, no raw price levels)
+Dockerfile                Stage 16: pipeline image
 ```
 
 ## How to run
@@ -85,6 +90,12 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.hedging       # Stage 11
 .venv/bin/python -m gasrisk.margin        # Stage 12
 .venv/bin/python -m gasrisk.credit        # Stage 13
+```
+
+Daily run in one command (Stage 16), from refresh to report:
+
+```bash
+.venv/bin/python -m gasrisk.pipeline            # add --offline to reuse stored raw files
 ```
 
 ```bash
@@ -231,6 +242,13 @@ Generated results: [outputs/stage13_report.md](outputs/stage13_report.md). Count
 - **Input data specification** ([handover/input_data_spec.md](handover/input_data_spec.md)) and its machine-readable schema ([handover/input_schema.yaml](handover/input_schema.yaml)): sources, refresh, units, licences, validation rules.
 - **Acceptance criteria** ([handover/acceptance_criteria.md](handover/acceptance_criteria.md)): input criteria and 18 output criteria (completeness, freshness, VaR sanity, backtest, reconciliation, pricing identities, margin and credit consistency, export labelling).
 - **Output validation script**: `python handover/validate_outputs.py` runs every criterion, writes `outputs/validation_report.csv` and exits with code 1 on any error. On the current run all checks pass, with 2 exposure limits and 1 counterparty in breach reported as information.
+
+## Stage 16 - daily risk pipeline
+
+- **One command**: `python -m gasrisk.pipeline` runs refresh, input validation, VaR, backtest, limits, stress, attribution, pricing, hedging, margin, credit, export, output validation and the [daily risk report](outputs/daily_risk_report.md); it stops at the first failure and logs each step to `outputs/pipeline_log.csv`. `--step` runs one step; `--monthly` adds the diagnostics and GARCH re-selection.
+- **Docker**: `docker build -t gasrisk .` then mount `data/`, `outputs/` and `exports/`; licensed data stay outside the image.
+- **Scheduler**: an Airflow DAG ([airflow/dags/gasrisk_daily.py](airflow/dags/gasrisk_daily.py)) runs each step as a task on weekdays at 19:30 Warsaw time with retries on the API steps and parallel branches after validation; the DAG file explains why Airflow fits and when a single cron line would be enough.
+- **Exports**: `exports/` holds the star schema for the dashboard (dimensions for date, risk factor, method, limit, driver, scenario, counterparty; facts for VaR, backtest, limit utilisation, risk contributions, stress, margin, attribution, credit). Every table carries a `data_label` column marking the synthetic book, and no raw price level is exported.
 
 ## Licence
 

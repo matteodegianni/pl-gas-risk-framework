@@ -44,3 +44,4 @@ AC-14,margin,FHS IM within 10% of the closed-form approximation,True,error,0.998
 AC-15,credit,PFE 97.5% >= PFE 95% >= 0 and netted EE <= EE without netting,True,error,
 AC-16,credit,breach status consistent with utilisation,True,error,
 AC-17,reporting,breaches present today are reported (information),True,info,limits in breach: 2; counterparties in breach: 1
+AC-18,exports,dashboard CSVs exist and carry the synthetic label,True,error,

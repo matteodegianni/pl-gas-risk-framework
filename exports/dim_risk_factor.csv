@@ -1,0 +1,4 @@
+factor_key,factor_name,unit,source,data_label
+tge,TGE price,EUR/MWh (PLN via EUR/PLN),TGE via Instrat,synthetic book on real market data
+ttf,TTF price,EUR/MWh,ICE Endex second month,synthetic book on real market data
+fx,EUR/PLN,PLN per EUR,ECB reference rate,synthetic book on real market data

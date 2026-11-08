@@ -1,0 +1,15 @@
+step,status,seconds,message
+refresh,ok,0.7,panel rebuilt
+validate_inputs,ok,0.0,28 input checks passed
+var,ok,123.8,ok
+backtest,ok,0.2,ok
+limits,ok,0.3,ok
+stress,ok,0.0,ok
+attribution,ok,0.1,ok
+pricing,ok,0.1,ok
+hedging,ok,0.7,ok
+margin,ok,0.1,ok
+credit,ok,0.4,ok
+export,ok,0.2,ok
+validate_outputs,ok,0.0,46 checks passed
+report,failed,0.0,unsupported format string passed to Series.__format__
