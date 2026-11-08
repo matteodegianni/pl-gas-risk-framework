@@ -44,6 +44,7 @@ src/gasrisk/
   margin_report.py        generated Stage 12 report
   credit.py               Stage 13: CE, EE, PFE by Monte Carlo, synthetic scorecard, credit limits
   credit_report.py        generated Stage 13 report
+  doccheck.py             checks that every number in a document appears in the generated outputs or config
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -217,6 +218,10 @@ Generated results: [outputs/stage13_report.md](outputs/stage13_report.md). Count
 - Scorecard from five synthetic financial ratios (leverage, interest coverage, current ratio, EBITDA margin, size) mapped to an internal grade; the grade sets the limit on peak 95% PFE; utilisation and breach status as in Stage 7.
 - **Wrong-way risk is a documented limitation**: the model treats exposure and default as independent; the report shows how much higher exposure is in high-price paths.
 - Key findings (from the generated report): CP04 (grade 5) breaches its PFE limit (utilisation 14.35) and CP05 is amber (0.96); netting lowers CP05's peak EE by 27.5%; for counterparties selling gas to the supplier, peak-month EE in the 10% highest-price paths is 4.56x to 5.92x the average, which is where wrong-way risk would bite.
+
+## Stage 14 - risk framework
+
+[docs/risk_framework.md](docs/risk_framework.md): risk taxonomy, methodologies, limit structure and thresholds, escalation, model validation, current risk position, assumptions and limitations, based only on what Stages 1-13 build. Every number in it, and in the README, memo, model cards and interview notes, is checked against the generated outputs by `python -m gasrisk.doccheck` and `tests/test_docs.py`.
 
 ## Licence
 
