@@ -43,12 +43,32 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
 
 ## Next steps
 
-1. User to confirm before pushing to a public GitHub repository (README, LICENSE and data notice are ready;
+1. Public GitHub repository `pl-gas-risk-framework` requested by the user (push pending GitHub sign-in;
    `git remote` is not set).
-2. Phase 2: the user asked for a short design summary of Stages 10-13 (pricing method and inputs, hedge strategies,
-   margin method, PFE setup, counterparty scoring inputs) and to wait for approval before building. The summary
-   was given in chat at the end of Phase 1; build only after the user's OK.
+2. Phase 2 (Stages 10-13): **design approved** by the user with three changes (below). Build in sequence with the
+   same per-stage routine (concept first, tests, report, README, commit).
 3. Phase 3 (Stages 14-18) after Phase 2.
+
+## Approved Phase 2 design
+
+- **10. Pricing.** Black-76 for European options on TTF futures; underlying = TTF second-month settlement; EUR rate
+  from the ECB API; ACT/365 to option expiry (verify the ICE TTF option expiry rule); analytic delta, gamma, vega, theta.
+  *Change 1:* there is no free TTF implied volatility data, so volatility is the GARCH-t forecast or historical
+  volatility, clearly labelled as an assumption (model values, not market prices). Validate the pricer with
+  put-call parity and a published reference example (plus finite-difference Greeks).
+- **11. Hedging.** Minimum-variance hedge ratio of TGE (PLN) on TTF x EUR/PLN (rolling, daily and monthly); strategies:
+  no hedge, futures (optimal ratio and 0.70), TTF collar; compare risk reduction (P&L variance, VaR, ES) and cost.
+  Effectiveness by dollar-offset (80-125%) and regression; state it is simplified, not IFRS 9 hedge accounting.
+  *Change 2:* report a dollar-offset failure as it is, and quantify how much of the ineffectiveness comes from the
+  TGE-TTF location plus tenor basis found in Stage 8.
+- **12. Margin.** Variation margin from daily futures mark-to-market (EUR); initial margin approximated by a 2-day 99%
+  VaR (filtered historical simulation); margin calls under base and stress (Stage 8) scenarios; liquidity buffer =
+  99% quantile of 10-day cumulative margin outflow, in EUR and PLN.
+- **13. Credit.** OTC TTF forwards with 6 **synthetic** counterparties; Monte Carlo of TTF (GARCH-t) on a monthly grid;
+  CE, EE, PFE 95%/97.5% per counterparty with netting; scorecard from synthetic financial ratios (leverage, interest
+  coverage, current ratio, EBITDA margin, size) mapped to an internal rating; rating plus PFE sets limits;
+  utilisation and breach reporting. *Change 3:* document wrong-way risk as a limitation (counterparty quality falls
+  when gas prices spike, which is when forward exposure peaks); the model treats exposure and default as independent.
 
 ## Known limitations to keep in mind
 
