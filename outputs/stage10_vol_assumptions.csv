@@ -1,0 +1,4 @@
+vol_source,description,total_variance,sigma_annual,trading_days_to_expiry,T_years
+garch_t,"Stage 4 GARCH(1,1)-t (ar5 mean) forecast to expiry",0.04650294832944165,0.5946563457901232,34,0.13150684931506848
+hist_63d,"63-day historical volatility, held flat to expiry",0.03730940115411381,0.532641440942598,34,0.13150684931506848
+ewma,"EWMA (lambda 0.94) volatility, held flat to expiry",0.05302295579444734,0.6349766869895908,34,0.13150684931506848

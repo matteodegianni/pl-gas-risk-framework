@@ -1,0 +1,4 @@
+source,kind,F,K,T,sigma,r,published,computed,matches_published_rounding
+"Hull, Options, Futures, and Other Derivatives: Black's model, European futures put",put,20.0,20.0,0.3333333333333333,0.25,0.09,1.12,1.1166414565589438,True
+"Haug, The Complete Guide to Option Pricing Formulas: Black-76 example (call)",call,19.0,19.0,0.75,0.28,0.1,1.7011,1.701050725236268,True
+"Haug, The Complete Guide to Option Pricing Formulas: Black-76 example (put)",put,19.0,19.0,0.75,0.28,0.1,1.7011,1.701050725236268,True

@@ -187,3 +187,20 @@ diagnostics:
   timing_lags: 3              # cross-correlations reported for lags -3..+3
   bootstrap_reps: 2000
   bootstrap_block: 20         # moving-block bootstrap keeps volatility clustering
+
+pricing:
+  # Stage 10: Black-76 for European options on TTF futures (ICE Endex).
+  option_expiry_calendar_days_before: 5   # ICE Endex TTF options: 5 calendar days before the delivery month,
+                                          # moved to the prior UK business day if that day is not one
+  margining: futures_style                # ICE Endex TTF options are futures-style margined (premium not discounted)
+  day_count: 365                          # ACT/365 to option expiry
+  ecb_curve_url: https://data-api.ecb.europa.eu/service/data/YC
+  ecb_curve_keys:                         # euro area AAA government curve, Svensson spot rates (percent)
+    0.25: B.U2.EUR.4F.G_N_A.SV_C_YM.SR_3M
+    0.5: B.U2.EUR.4F.G_N_A.SV_C_YM.SR_6M
+    1.0: B.U2.EUR.4F.G_N_A.SV_C_YM.SR_1Y
+    2.0: B.U2.EUR.4F.G_N_A.SV_C_YM.SR_2Y
+  vol_source: garch_t                     # ASSUMPTION (no free TTF implied vol): garch_t, hist_63d or ewma
+  hist_window: 63
+  moneyness_grid: [0.70, 0.80, 0.90, 0.95, 1.00, 1.05, 1.10, 1.20, 1.30]
+  fd_bump_rel: 0.0001                     # relative bump for finite-difference Greek checks

@@ -35,6 +35,8 @@ src/gasrisk/
   stress_report.py        generated Stage 8 report
   attribution.py          Stage 9: daily P&L attribution of a synthetic supply contract
   attribution_report.py   generated Stage 9 report and figure
+  pricing.py              Stage 10: Black-76 options on TTF futures, Greeks, ECB rate, validation
+  pricing_report.py       generated Stage 10 report
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -69,6 +71,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.limits        # Stage 7
 .venv/bin/python -m gasrisk.stress        # Stage 8
 .venv/bin/python -m gasrisk.attribution   # Stage 9
+.venv/bin/python -m gasrisk.pricing       # Stage 10 (fetches the ECB yield curve; --offline reuses it)
 ```
 
 ```bash
@@ -168,6 +171,15 @@ Generated results: [outputs/stage9_report.md](outputs/stage9_report.md). Contrac
 - One-year fixed-price PLN supply contract with a winter-peak contracted profile and synthetic AR(1) demand deviations; purchases at TGE, TTF futures and EUR forward hedges sized on the remaining volume.
 - Daily P&L split sequentially and exactly into plan margin, volume effect, price effect (TGE purchases and TTF hedge at plan FX) and FX effect (purchase cost, hedge translation, forward); reconciliation enforced in code and by tests.
 - Key findings (from the generated report): total P&L 1,565,811 PLN against a plan margin of 10,000,000 PLN; the price effect is -7,936,717 PLN, with purchases at -38,096,776 PLN partly offset by the TTF hedge at +30,160,059 PLN; maximum daily reconciliation residual 9.313e-10 PLN.
+
+## Stage 10 - Black-76 option pricing
+
+Generated results: [outputs/stage10_report.md](outputs/stage10_report.md).
+
+- European options on the TTF second-month future with analytic delta, gamma, vega, theta and rho; expiry by the ICE Endex rule (5 calendar days before the delivery month, prior UK business day), ACT/365; EUR rate from the ECB AAA spot curve. ICE Endex TTF options are futures-style margined, so the exchange value is undiscounted; the premium-paid value is shown for OTC options.
+- **Volatility is an assumption**, not market data: there is no free TTF implied volatility, so the input is the Stage 4 GARCH-t forecast to expiry, with 63-day historical and EWMA volatility as alternatives. Values are model values, reported as a share of the futures price.
+- Validation: two published textbook examples (Hull; Haug), put-call parity on a strike grid, finite-difference Greeks and an implied-volatility round trip.
+- Key findings (from the generated report): the Jan 2027 option expires on 2026-12-24 (T 0.131507); GARCH-t volatility 0.5947; the ATM call is worth 8.5864% of F with GARCH-t, 7.6939% with historical and 9.1661% with EWMA volatility, so the volatility choice moves the value by 1.4722% of F. All reference examples match; maximum finite-difference relative error 3.529e-08.
 
 ## Licence
 

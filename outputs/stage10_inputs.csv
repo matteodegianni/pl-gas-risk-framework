@@ -1,0 +1,2 @@
+as_of,underlying,option_expiry,T_years_act365,uk_business_days_to_expiry,ecb_curve_date,eur_rate_cc,vol_source_used,sigma_annual,margining
+2026-11-06,TTF 2027-01 future (second month),2026-12-24,0.13150684931506848,34,2026-11-05,0.026006848112999997,garch_t,0.5946563457901232,futures_style
