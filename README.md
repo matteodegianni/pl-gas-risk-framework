@@ -39,6 +39,9 @@ src/gasrisk/
   pricing_report.py       generated Stage 10 report
   hedging.py              Stage 11: minimum-variance hedge ratio, strategies, dollar-offset and regression tests
   hedging_report.py       generated Stage 11 report
+  ttf_sim.py              shared TTF GARCH refit and path simulation (Stages 10, 12, 13)
+  margin.py               Stage 12: variation and initial margin, base and stress calls, liquidity buffer
+  margin_report.py        generated Stage 12 report
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -75,6 +78,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.attribution   # Stage 9
 .venv/bin/python -m gasrisk.pricing       # Stage 10 (fetches the ECB yield curve; --offline reuses it)
 .venv/bin/python -m gasrisk.hedging       # Stage 11
+.venv/bin/python -m gasrisk.margin        # Stage 12
 ```
 
 ```bash
@@ -192,6 +196,15 @@ Generated results: [outputs/stage11_report.md](outputs/stage11_report.md). Book 
 - Strategies on today's book over 21-day historical windows with full revaluation: no hedge, futures at h*, futures at 0.70, TTF collar (long 1.10F call, short 0.90F put), each with and without the EUR forward; P&L variance, 99% VaR, 97.5% ES and cost.
 - Dollar-offset (80-125%) and regression (R2 >= 0.80, slope 0.80-1.25) tests per 21-day period, and an exact split of the ineffectiveness into the TGE-TTF basis term and the FX term.
 - Key findings (from the generated report): h* is 0.7840 on daily changes and 1.1143 on 21-day changes (latest rolling 36 blocks 0.8999). Futures at h* cut 21-day P&L variance by 52.8% and 99% VaR by 44.0%, but 99% VaR by only 12.5% in crisis windows. The **dollar-offset test fails** (29.1% of 110 periods pass) while the regression test passes (R2 0.8439); the TGE-TTF location plus tenor basis carries 99.1% of the variance of the ineffectiveness and 93.4% of it in failing periods. The collar costs a net 0.7711% of F at the volatility assumption.
+
+## Stage 12 - margin forecasting
+
+Generated results: [outputs/stage12_report.md](outputs/stage12_report.md). Position and bank credit line are **synthetic**.
+
+- Variation margin from daily mark-to-market of the long TTF futures hedge (EUR); initial margin as a 2-day 99% VaR by filtered historical simulation on the refitted Stage 4 GARCH-t model (driftless futures price).
+- Base forecast: 20,000 FHS-GARCH paths over 10 days with IM recomputed along each path; stress: Stage 8 scenarios plus the worst crisis TTF falls, with IM after the scenario, and a volatility-only stress.
+- Liquidity buffer: 99% quantile of the 10-day cumulative margin outflow in EUR and PLN, against a synthetic credit line, with a historical check.
+- Key findings (from the generated report): IM today 3,676,450 EUR (12.30% of notional); 10-day buffer 7,085,393 EUR (31,122,589 PLN, 28.3% of the credit line). The largest stress call is the worst 10-day TTF fall of the crisis, 17,864,382 EUR (71.5% of the line). The P&L stress scenarios (TGE spikes) bring cash in on the hedge: liquidity risk sits in the opposite scenario, a TTF collapse.
 
 ## Licence
 

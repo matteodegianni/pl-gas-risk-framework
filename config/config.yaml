@@ -219,3 +219,15 @@ hedging:
   regression_r2_min: 0.80
   regression_slope_band: [0.80, 1.25]
   crisis_window: ["2021-07-01", "2023-06-30"]
+
+margin:
+  # Stage 12: exchange margin on the SYNTHETIC long TTF futures position (book.ttf_hedge_ratio x book.q_open_mwh).
+  im_mpor_days: 2                 # initial margin = 2-day 99% VaR (filtered historical simulation)
+  im_confidence: 0.99
+  buffer_horizon_days: 10         # liquidity buffer = 99% quantile of 10-day cumulative margin outflow
+  buffer_confidence: 0.99
+  n_paths: 20000
+  im_sims: 50000
+  bank_credit_line_eur: 25000000  # SYNTHETIC committed bank facility for margin funding (round number)
+  crisis_window: ["2021-07-01", "2022-12-31"]
+  fx_stress: 0.05                 # EUR/PLN +5% for the PLN cost of an EUR margin call (Stage 8 shock size)

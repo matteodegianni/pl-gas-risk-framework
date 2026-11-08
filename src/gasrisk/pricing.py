@@ -26,7 +26,6 @@ from __future__ import annotations
 
 import argparse
 import io
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -34,7 +33,7 @@ from scipy import optimize, stats
 
 from gasrisk.config import Config, load_config
 from gasrisk.data.calendars import ttf_expiry, uk_business_days
-from gasrisk.volatility import MeanSpec, aggregate_variance, ar_coefficients, garch_model, garch_variance_path
+from gasrisk.volatility import aggregate_variance, ar_coefficients
 
 # Published reference examples (inputs and the value printed in the source).
 REFERENCE_EXAMPLES = [
@@ -168,16 +167,11 @@ def zero_rate(curve_row: pd.Series, t: float | np.ndarray) -> np.ndarray:
 
 def ttf_vol_assumptions(cfg: Config, rets: pd.Series, as_of: pd.Timestamp, h_days: int, T: float) -> pd.DataFrame:
     """Annualised volatility candidates (ACT/365) for the option to expiry. All are ASSUMPTIONS, not implied vols."""
-    selected = pd.read_csv(cfg.path("outputs_dir") / "stage4_selected_spec.csv").set_index("series").loc["ttf"]
-    cand = {d["name"]: MeanSpec.from_cfg(d) for d in cfg["volatility"]["mean_candidates"]}
-    spec = cand[selected["mean"]]
-    y = rets.loc[:as_of].dropna().iloc[-int(cfg["var"]["garch_window"]):] * 100.0
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        res = garch_model(y, selected["dist"], spec).fit(disp="off", options={"maxiter": 2000})
-    path = garch_variance_path(res.params, float(np.asarray(res.resid)[-1]),
-                               float(np.asarray(res.conditional_volatility)[-1]) ** 2, h_days)
-    total_var = aggregate_variance(path, ar_coefficients(res.params, spec), h_days) / 1e4
+    from gasrisk.ttf_sim import fit_ttf_garch
+
+    m = fit_ttf_garch(cfg, rets, as_of)
+    path = m.variance_path(h_days)
+    total_var = aggregate_variance(path, ar_coefficients(m.params, m.spec), h_days) / 1e4
     hist = rets.loc[:as_of].dropna().iloc[-int(cfg["pricing"]["hist_window"]):]
     lam = float(cfg["volatility"]["ewma_lambda"])
     r = rets.loc[:as_of].dropna().to_numpy()
@@ -185,7 +179,7 @@ def ttf_vol_assumptions(cfg: Config, rets: pd.Series, as_of: pd.Timestamp, h_day
     for x in r[63:]:
         s2 = lam * s2 + (1 - lam) * x * x
     rows = [
-        {"vol_source": "garch_t", "description": f"Stage 4 GARCH(1,1)-t ({selected['mean']} mean) forecast to expiry",
+        {"vol_source": "garch_t", "description": f"Stage 4 GARCH(1,1)-t ({m.mean_name} mean) forecast to expiry",
          "total_variance": total_var, "sigma_annual": np.sqrt(total_var / T)},
         {"vol_source": "hist_63d", "description": "63-day historical volatility, held flat to expiry",
          "total_variance": float(hist.var(ddof=1)) * h_days, "sigma_annual": np.sqrt(float(hist.var(ddof=1)) * h_days / T)},
