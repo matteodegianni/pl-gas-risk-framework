@@ -37,6 +37,8 @@ src/gasrisk/
   attribution_report.py   generated Stage 9 report and figure
   pricing.py              Stage 10: Black-76 options on TTF futures, Greeks, ECB rate, validation
   pricing_report.py       generated Stage 10 report
+  hedging.py              Stage 11: minimum-variance hedge ratio, strategies, dollar-offset and regression tests
+  hedging_report.py       generated Stage 11 report
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -72,6 +74,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.stress        # Stage 8
 .venv/bin/python -m gasrisk.attribution   # Stage 9
 .venv/bin/python -m gasrisk.pricing       # Stage 10 (fetches the ECB yield curve; --offline reuses it)
+.venv/bin/python -m gasrisk.hedging       # Stage 11
 ```
 
 ```bash
@@ -180,6 +183,15 @@ Generated results: [outputs/stage10_report.md](outputs/stage10_report.md).
 - **Volatility is an assumption**, not market data: there is no free TTF implied volatility, so the input is the Stage 4 GARCH-t forecast to expiry, with 63-day historical and EWMA volatility as alternatives. Values are model values, reported as a share of the futures price.
 - Validation: two published textbook examples (Hull; Haug), put-call parity on a strike grid, finite-difference Greeks and an implied-volatility round trip.
 - Key findings (from the generated report): the Jan 2027 option expires on 2026-12-24 (T 0.131507); GARCH-t volatility 0.5947; the ATM call is worth 8.5864% of F with GARCH-t, 7.6939% with historical and 9.1661% with EWMA volatility, so the volatility choice moves the value by 1.4722% of F. All reference examples match; maximum finite-difference relative error 3.529e-08.
+
+## Stage 11 - hedging and hedge effectiveness
+
+Generated results: [outputs/stage11_report.md](outputs/stage11_report.md). Book is **synthetic**; effectiveness tests are a simplified illustration, **not IFRS 9 hedge accounting**.
+
+- Minimum-variance hedge ratio of TGE (PLN) on TTF futures converted to PLN, daily (rolling 250 days) and on non-overlapping 21-day changes (full sample, sub-periods, rolling 36 blocks), with and without an EUR forward.
+- Strategies on today's book over 21-day historical windows with full revaluation: no hedge, futures at h*, futures at 0.70, TTF collar (long 1.10F call, short 0.90F put), each with and without the EUR forward; P&L variance, 99% VaR, 97.5% ES and cost.
+- Dollar-offset (80-125%) and regression (R2 >= 0.80, slope 0.80-1.25) tests per 21-day period, and an exact split of the ineffectiveness into the TGE-TTF basis term and the FX term.
+- Key findings (from the generated report): h* is 0.7840 on daily changes and 1.1143 on 21-day changes (latest rolling 36 blocks 0.8999). Futures at h* cut 21-day P&L variance by 52.8% and 99% VaR by 44.0%, but 99% VaR by only 12.5% in crisis windows. The **dollar-offset test fails** (29.1% of 110 periods pass) while the regression test passes (R2 0.8439); the TGE-TTF location plus tenor basis carries 99.1% of the variance of the ineffectiveness and 93.4% of it in failing periods. The collar costs a net 0.7711% of F at the volatility assumption.
 
 ## Licence
 

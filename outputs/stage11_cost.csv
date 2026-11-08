@@ -1,0 +1,3 @@
+strategy,premium_pct_F,premium_eur,premium_pln,note,call_pct_F,put_pct_F
+futures,0.0,0.0,0.0,no premium; margin funding in Stage 12,,
+collar 0.70,0.0077109567912533195,230426.52179302293,1012148.4969758532,"long 1.10F call, short 0.90F put, 2027-01 options, futures-style value at the volatility assumption",0.04878035166806672,0.041069394876813395

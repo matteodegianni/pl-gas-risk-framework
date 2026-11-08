@@ -1,0 +1,6 @@
+component,std_per_mwh_pln,covariance_share_of_ineffectiveness_variance,subset,periods,mean_abs_basis_term,mean_abs_fx_term,basis_share_of_abs_ineffectiveness
+basis term dB_adj x FX,51.47558135846838,0.9909117321264161,,,,,
+FX term TGE_EUR x dFX,6.867430094636548,0.009088267873584242,,,,,
+total ineffectiveness dS - dF,51.48548757596616,1.0,,,,,
+,,,failing periods,78.0,21.89776456628232,1.5512284991162053,0.9338466903551091
+,,,passing periods,32.0,5.746076404293059,5.784196018705621,0.49834697685301316

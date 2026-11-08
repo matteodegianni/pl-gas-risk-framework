@@ -204,3 +204,18 @@ pricing:
   hist_window: 63
   moneyness_grid: [0.70, 0.80, 0.90, 0.95, 1.00, 1.05, 1.10, 1.20, 1.30]
   fd_bump_rel: 0.0001                     # relative bump for finite-difference Greek checks
+
+hedging:
+  # Stage 11: SYNTHETIC book (open volume from `book`), hedge instruments on the TTF second month.
+  rolling_window_days: 250        # rolling daily minimum-variance hedge ratio
+  rolling_window_months: 36       # rolling monthly (21-day blocks) hedge ratio
+  month_days: 21                  # one "month" = 21 trading days (non-overlapping blocks)
+  horizon_days: 21                # strategy comparison horizon (overlapping windows, today's book and levels)
+  fixed_ratio: 0.70
+  collar_call_moneyness: 1.10     # long call strike / F
+  collar_put_moneyness: 0.90      # short put strike / F
+  dollar_offset_band: [0.80, 1.25]
+  cumulative_periods: 12          # cumulative dollar-offset over a one-year hedge relationship (12 x 21 days)
+  regression_r2_min: 0.80
+  regression_slope_band: [0.80, 1.25]
+  crisis_window: ["2021-07-01", "2023-06-30"]

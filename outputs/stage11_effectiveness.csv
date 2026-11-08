@@ -1,0 +1,3 @@
+hedge,periods,dollar_offset_pass_rate,fails_with_small_dS_share,rolling_12_period_cumulative_pass_rate,rolling_12_period_cumulative_median,regression_slope,regression_r2,regression_effective
+TTF futures only,110,0.2909090909090909,0.6025641025641025,0.40404040404040403,1.130559795544705,1.114334704701668,0.8439251546860177,True
+TTF futures and EUR forward,110,0.33636363636363636,0.6027397260273972,0.37373737373737376,1.1450264325662884,1.0646340114399102,0.8381935550568812,True
