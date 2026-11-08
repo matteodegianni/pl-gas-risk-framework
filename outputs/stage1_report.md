@@ -20,8 +20,10 @@ the build; nothing is typed by hand. Raw and clean data are not committed
 
 Calendar: TTF second-month (ICE Endex) trading days. 2321 rows from
 2017-10-23 to 2026-11-06. TGE is aligned on trade date
-(delivery date minus one day). EUR/PLN is the NBP fixing, carried forward over
-Polish holidays within the configured limit. EUA is the latest auction price
+(delivery date minus one day). Every EUR/PLN source (NBP, ECB, Yahoo) is carried
+into the panel, each carried forward over its own holidays within the configured
+limit; `eurpln` is the configured risk source (`fx.risk_source` =
+ecb, selected in Stage 2). EUA is the latest auction price
 within the configured age limit.
 
 | column | non_missing | missing | first | last |
@@ -33,10 +35,18 @@ within the configured age limit.
 | ttf_risk_ret | 2319 | 2 | 2017-10-23 | 2026-11-06 |
 | tge_pln | 2321 | 0 | 2017-10-23 | 2026-11-06 |
 | tge_ret | 2320 | 1 | 2017-10-24 | 2026-11-06 |
+| eurpln_nbp | 2321 | 0 | 2017-10-23 | 2026-11-06 |
+| eurpln_nbp_ret | 2320 | 1 | 2017-10-24 | 2026-11-06 |
+| eurpln_ecb | 2321 | 0 | 2017-10-23 | 2026-11-06 |
+| eurpln_ecb_ret | 2320 | 1 | 2017-10-24 | 2026-11-06 |
+| eurpln_yahoo | 2321 | 0 | 2017-10-23 | 2026-11-06 |
+| eurpln_yahoo_ret | 2320 | 1 | 2017-10-24 | 2026-11-06 |
 | eurpln | 2321 | 0 | 2017-10-23 | 2026-11-06 |
 | eurpln_ret | 2320 | 1 | 2017-10-24 | 2026-11-06 |
 | tge_eur | 2321 | 0 | 2017-10-23 | 2026-11-06 |
 | basis_tge_ttfc1_eur | 2268 | 53 | 2017-10-23 | 2026-11-06 |
+| basis_tge_ttfc2_eur | 2321 | 0 | 2017-10-23 | 2026-11-06 |
+| basis_tge_ttfc2_change | 2318 | 3 | 2017-10-24 | 2026-11-06 |
 | eua_eur_t | 2230 | 91 | 2017-10-23 | 2026-11-06 |
 | eua_age_days | 2230 | 91 | 2017-10-23 | 2026-11-06 |
 
@@ -46,7 +56,7 @@ Full log: `outputs/data_quality_log.csv` (one row per event or contiguous run).
 
 | severity | entries | observations |
 |---|---|---|
-| info | 1277 | 9118 |
+| info | 1286 | 9127 |
 | warning | 372 | 446 |
 
 By series and severity:
@@ -58,7 +68,9 @@ By series and severity:
 | eurpln_nbp | 11 | 0 |
 | eurpln_yahoo | 43 | 221 |
 | panel.eua_eur_t | 9 | 0 |
-| panel.eurpln | 48 | 0 |
+| panel.eurpln_ecb | 7 | 0 |
+| panel.eurpln_nbp | 48 | 0 |
+| panel.eurpln_yahoo | 2 | 0 |
 | tge_gas_da | 87 | 19 |
 | ttf_c1 | 481 | 0 |
 | ttf_c1/ttf_c2 | 1 | 2 |

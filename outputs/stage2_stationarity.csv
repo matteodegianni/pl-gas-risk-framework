@@ -1,0 +1,9 @@
+series,transform,description,n,adf_stat,adf_p,adf_lags,kpss_stat,kpss_p,kpss_p_note,verdict
+ttf,level,log roll-adjusted index,2315,-1.388890708806712,0.5875903123148484,5,0.7238232031369098,0.011379708805735468,,unit root
+ttf,return,log return (roll-adjusted),2308,-14.59942195898162,4.189203612672653e-27,10,0.16847840163165007,0.1,>=0.10 (table bound),stationary
+tge,level,log price,2295,-1.444865037514858,0.5605884579366223,25,2.858161709519257,0.01,<=0.01 (table bound),unit root
+tge,return,log return,2295,-10.168307083667859,7.200586641071777e-18,24,0.04590395176790718,0.1,>=0.10 (table bound),stationary
+eurpln,level,log rate,2306,-2.0661287839155933,0.25835061596461883,14,1.5870360356187396,0.01,<=0.01 (table bound),unit root
+eurpln,return,log return,2306,-14.245831033751335,1.5101225312290696e-26,13,0.07533745156247328,0.1,>=0.10 (table bound),stationary
+basis,level,location plus tenor basis level (EUR/MWh),2293,-5.242850137046528,7.183460569440929e-06,27,0.3041123969716758,0.1,>=0.10 (table bound),stationary
+basis,return,"location plus tenor basis change (EUR/MWh, roll-adjusted)",2291,-11.989783671207043,3.543195605369678e-22,26,0.022360095602322487,0.1,>=0.10 (table bound),stationary

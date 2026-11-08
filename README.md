@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stage 1 (data and data quality) complete.** Later stages are not built yet.
+> Status: **Phase 1, Stages 1 (data and data quality) and 2 (diagnostics) complete.** Later stages are not built yet.
 
 ## Repository layout
 
@@ -19,6 +19,8 @@ src/gasrisk/
     quality.py            issue log and checks (gaps, OHLC, stale runs, outliers)
     build.py              Stage 1 pipeline: load, check, align, write outputs
     report.py             generated Stage 1 report
+  diagnostics.py          Stage 2: FX source timing, stationarity, serial dependence, distribution
+  diagnostics_report.py   generated Stage 2 report
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -41,7 +43,11 @@ Place the two Investing.com exports (English site, daily, see [data/README.md](d
 .venv/bin/python -m gasrisk.data.build
 ```
 
-This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from NBP, ECB and Yahoo, runs every quality check and writes `outputs/`. Use `--offline` to rebuild from the stored raw files.
+This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from NBP, ECB and Yahoo, runs every quality check and writes `outputs/`. Use `--offline` to rebuild from the stored raw files. Then run the Stage 2 diagnostics:
+
+```bash
+.venv/bin/python -m gasrisk.diagnostics
+```
 
 ```bash
 .venv/bin/python -m pytest
@@ -58,7 +64,17 @@ Methodology in brief:
 - **TTF rolls.** Expiry is two UK business days before the delivery month; the roll day is the first trading day after expiry. On roll days the return is computed within one contract, ln(c1_t / c2_t-1), which removes the calendar spread. Because c1 (CME listing) and c2 (ICE Endex) come from different venues, adjusted roll returns beyond 4 robust standard deviations are excluded as probable misalignments.
 - **TTF risk series.** The ICE second-month contract held to roll is the TTF risk factor: c1 is a thin CME listing with many settlement-only days, c2 is the liquid ICE contract. c1 is used for roll-day returns and as a cross-check.
 - **Outliers.** Robust z-scores on log returns against a trailing median and MAD (no look-ahead). A move is presumed real; a price is removed only if a second series contradicts the move and it reverses the next day.
-- **EUR/PLN.** NBP mid fixing is primary; ECB and Yahoo are cross-checks. Gaps between sources are logged, NBP is carried over Polish holidays for at most 3 days.
+- **EUR/PLN.** All three sources (NBP, ECB, Yahoo) are cleaned and carried into the panel, each over its own holidays for at most 3 days. Gaps between sources are logged. The risk source is chosen in Stage 2.
+
+## Stage 2 - diagnostics
+
+Generated results: [outputs/stage2_report.md](outputs/stage2_report.md).
+
+- **EUR/PLN source timing.** Daily returns of series sampled at different times of day are asynchronous, which biases same-day correlations toward zero. Lead-lag correlations with TTF returns and a moving-block bootstrap of the share of correlation captured at lag 0 select the source sampled closest to the TTF settlement (ECB); NBP and Yahoo remain cross-checks. The analysis also detects that Yahoo's daily EUR/PLN values behave like quotes taken around the previous evening.
+- **Stationarity.** ADF and KPSS read jointly on log levels (TTF as a roll-adjusted index) and on returns.
+- **Location plus tenor basis.** TGE day-ahead spot (in EUR) minus TTF second month; diagnostics include which leg drives its tail days.
+- **Serial dependence.** Ljung-Box on returns and squared returns, a heteroskedasticity-robust portmanteau test for the mean (standard Ljung-Box over-rejects under volatility clustering) and ARCH-LM.
+- **Distribution.** Skewness, excess kurtosis, Jarque-Bera, tail frequencies and quantiles against the normal, full sample and pre-crisis, crisis and post-crisis sub-periods.
 
 ## Data sources and credits
 
@@ -77,5 +93,5 @@ Gas price data: Instrat, energy.instrat.pl, CC BY-NC 4.0, original source TGE. T
 
 - TTF prices come from manual exports of continuation series; contract identities on each day are inferred from the expiry rule, not supplied by the source.
 - The front-month export (CME listing) is thin, with long settlement-only periods.
-- TGE is a spot (day-ahead) index while TTF is a futures price, so their difference mixes location basis and tenor spread.
+- **The TGE-TTF basis is a location plus tenor basis**, not a pure location basis: TGE is a Polish day-ahead spot index, the hedge leg is the Dutch TTF second-month future. Its fat tails come mainly from TGE spot spikes (the TGE leg is the larger leg on most basis tail days, see the Stage 2 report), so basis risk measured here overstates what a same-tenor hedge would leave. A TTF day-ahead or TGE forward series would be needed to separate the two components; neither is available from the free sources used.
 - EUA prices are auction clearing prices held every few days, not continuous futures settlements.

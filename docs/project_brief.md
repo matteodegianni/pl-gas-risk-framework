@@ -16,12 +16,12 @@ A Polish gas supplier:
 | Risk | Source in the scenario |
 |---|---|
 | Gas price risk | Fixed PLN sales against floating TGEgasDA purchases |
-| Basis risk | TGE (PLN) and TTF (EUR) do not move one for one, so a TTF hedge leaves residual TGE exposure |
+| Basis risk | TGE (PLN) and TTF (EUR) do not move one for one, so a TTF hedge leaves residual TGE exposure. This is a **location plus tenor basis** (TGE day-ahead spot vs TTF second month), not a pure location basis |
 | EUR/PLN FX risk | Hedge P&L, option premia and margin calls are in EUR while the business reports in PLN; the TGE price itself embeds EUR/PLN through import parity |
 | Margin liquidity risk | Daily variation margin and initial margin on TTF futures, funded in EUR |
 | Counterparty credit risk | Replacement cost of OTC forwards if a counterparty defaults |
 
-The original brief (TTF physical, TTF hedge) had no basis risk. The revised scenario is closer to how a Polish supplier is actually exposed and adds a TGE-TTF basis analysis.
+The original brief (TTF physical, TTF hedge) had no basis risk. The revised scenario is closer to how a Polish supplier is actually exposed and adds a TGE-TTF location plus tenor basis analysis.
 
 ## Data sources
 

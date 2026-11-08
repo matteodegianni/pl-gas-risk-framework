@@ -67,6 +67,25 @@ quality:
   fx_ffill_max_days: 3         # max calendar days an NBP fixing is carried over a Polish holiday
   co2_ffill_max_days: 7        # max calendar days an auction price is carried forward
 
+fx:
+  # EUR/PLN source used as the risk factor. Chosen in Stage 2 by the FX timing
+  # analysis (outputs/stage2_fx_timing.csv); the other sources stay as cross-checks.
+  risk_source: ecb
+  sources: [nbp, ecb, yahoo]
+
 sample:
   # The aligned panel starts when all core series (TTF c1 and c2, TGE, FX) are available.
   start: auto
+  # Sub-periods for descriptive statistics (modelling choice, documented in the Stage 2 report).
+  subperiods:
+    pre_crisis: ["2017-10-23", "2021-06-30"]
+    crisis: ["2021-07-01", "2023-06-30"]
+    post_crisis: ["2023-07-01", null]
+
+diagnostics:
+  alpha: 0.05
+  ljung_box_lags: [5, 10, 20]
+  arch_lm_lags: 5
+  timing_lags: 3              # cross-correlations reported for lags -3..+3
+  bootstrap_reps: 2000
+  bootstrap_block: 20         # moving-block bootstrap keeps volatility clustering

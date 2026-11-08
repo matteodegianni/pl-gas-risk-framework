@@ -259,15 +259,30 @@ def build_panel(cfg: Config, ttf: pd.DataFrame, tge: pd.DataFrame, fx: pd.DataFr
     log.add_runs(miss, idx, INSTRAT, "panel.tge_pln", "panel_missing", "warning", "left missing", "no TGE trade on a TTF trading day")
     p["tge_ret"] = np.log(p["tge_pln"] / p["tge_pln"].shift(1))
 
-    p["eurpln"], age = _asof(fx["eurpln_nbp"], idx, int(q["fx_ffill_max_days"]))
-    carried = idx[(age > 0).to_numpy()]
-    log.add_runs(carried, idx, "NBP", "panel.eurpln", "fx_carried_forward", "info", "previous NBP fixing used",
-                 f"no NBP fixing on this TTF trading day (Polish holiday); carried forward at most {q['fx_ffill_max_days']} days")
-    log.add_runs(idx[p["eurpln"].isna().to_numpy()], idx, "NBP", "panel.eurpln", "panel_missing", "warning", "left missing", "no NBP fixing within carry limit")
-    p["eurpln_ret"] = np.log(p["eurpln"] / p["eurpln"].shift(1))
+    # Every EUR/PLN source is carried into the panel; ``eurpln`` is the configured risk source,
+    # the others remain as cross-checks (selection evidence: Stage 2 FX timing analysis).
+    fx_names = {"nbp": "NBP", "ecb": "ECB", "yahoo": "Yahoo"}
+    for key in cfg["fx"]["sources"]:
+        col = f"eurpln_{key}"
+        p[col], age = _asof(fx[col], idx, int(q["fx_ffill_max_days"]))
+        carried = idx[(age > 0).to_numpy()]
+        log.add_runs(carried, idx, fx_names[key], f"panel.{col}", "fx_carried_forward", "info", "previous value used",
+                     f"no {fx_names[key]} observation on this TTF trading day (source holiday); carried forward at most {q['fx_ffill_max_days']} days")
+        log.add_runs(idx[p[col].isna().to_numpy()], idx, fx_names[key], f"panel.{col}", "panel_missing", "warning",
+                     "left missing", "no observation within carry limit")
+        p[f"{col}_ret"] = np.log(p[col] / p[col].shift(1))
+    src = cfg["fx"]["risk_source"]
+    p["eurpln"] = p[f"eurpln_{src}"]
+    p["eurpln_ret"] = p[f"eurpln_{src}_ret"]
 
     p["tge_eur"] = p["tge_pln"] / p["eurpln"]
+    # Location plus tenor basis: TGE day-ahead spot (EUR) minus TTF futures (not a pure location basis).
+    # Location plus tenor basis: TGE day-ahead spot (EUR) minus TTF futures, not a pure location basis.
     p["basis_tge_ttfc1_eur"] = p["tge_eur"] - p["ttf_c1"]
+    p["basis_tge_ttfc2_eur"] = p["tge_eur"] - p["ttf_c2"]
+    # Basis change with the TTF leg measured within one contract (no roll spread on roll days).
+    ttf_change = p["ttf_c2"].shift(1) * np.expm1(p["ttf_r_c2_adj"])
+    p["basis_tge_ttfc2_change"] = p["tge_eur"].diff() - ttf_change
 
     p["eua_eur_t"], p["eua_age_days"] = _asof(co2["price_eur_t"], idx, int(q["co2_ffill_max_days"]))
     log.add_runs(idx[p["eua_eur_t"].isna().to_numpy()], idx, INSTRAT_EEX, "panel.eua_eur_t", "panel_missing", "info",

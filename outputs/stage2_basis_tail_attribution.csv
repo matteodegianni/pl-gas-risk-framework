@@ -1,0 +1,12 @@
+metric,value
+days,2318.0
+tail_days_abs_z_gt_3,52.0
+tail_days_tge_leg_larger,34.0
+share_tail_days_tge_leg_larger,0.6538461538461539
+median_abs_tge_leg_over_abs_basis_tail,0.7859360831863382
+median_abs_ttf_leg_over_abs_basis_tail,0.3440438401778217
+tge_dominated_tail_days_reversing_next_day,10.0
+share_tail_sum_sq_of_total,0.722567971156042
+excess_kurtosis_basis_change,46.54080831090523
+excess_kurtosis_tge_leg,58.46111263764346
+excess_kurtosis_ttf_leg,44.04836007416708

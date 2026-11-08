@@ -49,8 +49,10 @@ the build; nothing is typed by hand. Raw and clean data are not committed
 
 Calendar: TTF second-month (ICE Endex) trading days. {panel_rows} rows from
 {panel.index[0].date()} to {panel.index[-1].date()}. TGE is aligned on trade date
-(delivery date minus one day). EUR/PLN is the NBP fixing, carried forward over
-Polish holidays within the configured limit. EUA is the latest auction price
+(delivery date minus one day). Every EUR/PLN source (NBP, ECB, Yahoo) is carried
+into the panel, each carried forward over its own holidays within the configured
+limit; `eurpln` is the configured risk source (`fx.risk_source` =
+{cfg['fx']['risk_source']}, selected in Stage 2). EUA is the latest auction price
 within the configured age limit.
 
 {_md(tables['panel_coverage'])}
