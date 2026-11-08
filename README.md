@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility) and 5 (VaR and ES) complete.** Later stages are not built yet.
+> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility), 5 (VaR and ES) and 6 (VaR backtesting) complete.** Later stages are not built yet.
 
 ## Repository layout
 
@@ -27,6 +27,8 @@ src/gasrisk/
   volatility_report.py    generated Stage 4 report and figure
   var.py                  Stage 5: VaR and ES of the synthetic book (six methods)
   var_report.py           generated Stage 5 report and figure
+  backtest.py             Stage 6: Kupiec, Christoffersen, Basel traffic light, ES check
+  backtest_report.py      generated Stage 6 report and figure
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -56,6 +58,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.forecasting   # Stage 3, about 5-10 minutes on 4 cores
 .venv/bin/python -m gasrisk.volatility    # Stage 4
 .venv/bin/python -m gasrisk.var           # Stage 5, about 1 minute
+.venv/bin/python -m gasrisk.backtest      # Stage 6
 ```
 
 ```bash
@@ -124,6 +127,13 @@ Generated results: [outputs/stage5_report.md](outputs/stage5_report.md). All pos
 - **Book (synthetic).** Short floating TGE purchases behind fixed-price PLN sales (500,000 MWh open), long TTF futures (0.70 x open volume, EUR), long EUR/PLN forward (EUR notional 0.70 x open volume x TGE in EUR). Risk factors: TGE in EUR, TTF (held to roll), EUR/PLN (ECB); every scenario fully revalued.
 - **Methods.** Historical simulation (500 days), multivariate normal (250 days), GARCH(1,1)-t marginals from Stage 4 with a Gaussian copula and with a Student-t copula, filtered historical simulation, and EWMA (RiskMetrics, lambda 0.94). VaR at 95% and 99%; ES at 95%, 97.5% (Basel FRTB) and 99%. Walk-forward from the same test start as Stages 3-4.
 - **Tests.** Sign conventions (TGE rise loses, TTF rise gains, EUR/PLN rise gains on the forward and raises the PLN cost of TGE), legs sum to the total, copula tail dependence, no look-ahead.
+
+## Stage 6 - VaR backtesting
+
+Generated results: [outputs/stage6_report.md](outputs/stage6_report.md).
+
+- Kupiec proportion-of-failures, Christoffersen independence and conditional coverage at 95% and 99% for all six Stage 5 methods; Basel traffic light on 99% VaR over 250-day windows; descriptive ES check on exception days.
+- Key findings (from the generated report): over 1,568 days, the normal and EWMA methods fail at 99% (30 exceptions against 15.68 expected each; conditional coverage p 0.0004 and 0.0048), consistent with the Stage 4 finding that normal tails are too thin. GARCH-t with both copulas and FHS pass at 99% (12, 11 and 10 exceptions), and FHS has every rolling 250-day window in the green zone. Historical simulation and GARCH-t with the Gaussian copula pass conditional coverage at both levels.
 
 ## Data sources and credits
 
