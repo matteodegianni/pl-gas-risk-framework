@@ -38,8 +38,9 @@ src/gasrisk/
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
-docs/                     brief, later: risk framework, model cards, management memo
-notebooks/ handover/ airflow/   later stages
+docs/                     brief, interview notes, handoff; later: risk framework, model cards, memo
+notebooks/                01_core_market_risk.ipynb: Phase 1 story from the committed result tables
+handover/ airflow/        later stages
 ```
 
 ## How to run
@@ -167,6 +168,10 @@ Generated results: [outputs/stage9_report.md](outputs/stage9_report.md). Contrac
 - One-year fixed-price PLN supply contract with a winter-peak contracted profile and synthetic AR(1) demand deviations; purchases at TGE, TTF futures and EUR forward hedges sized on the remaining volume.
 - Daily P&L split sequentially and exactly into plan margin, volume effect, price effect (TGE purchases and TTF hedge at plan FX) and FX effect (purchase cost, hedge translation, forward); reconciliation enforced in code and by tests.
 - Key findings (from the generated report): total P&L 1,565,811 PLN against a plan margin of 10,000,000 PLN; the price effect is -7,936,717 PLN, with purchases at -38,096,776 PLN partly offset by the TTF hedge at +30,160,059 PLN; maximum daily reconciliation residual 9.313e-10 PLN.
+
+## Licence
+
+Code: MIT (see `LICENSE`). Market data are not included and remain subject to the providers' terms below.
 
 ## Data sources and credits
 
