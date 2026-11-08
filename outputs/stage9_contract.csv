@@ -1,0 +1,2 @@
+contract_start,contract_end,delivery_days,contracted_mwh,actual_mwh,volume_deviation,sale_margin_pln_mwh,max_abs_daily_residual
+2025-11-07,2026-11-06,256,499999.99999999994,495742.02468419843,-0.008515950631603042,20.0,9.313225746154785e-10

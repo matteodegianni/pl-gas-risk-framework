@@ -170,6 +170,16 @@ stress:
     ttf_eur: [-20, -5, 5, 20]
     fx: [-0.10, -0.05, 0.05, 0.10]
 
+attribution:
+  # SYNTHETIC one-year supply contract ending on the last panel date.
+  contract_days: 365               # calendar days before the last panel date
+  sale_margin_pln_mwh: 20.0        # fixed sale price = plan cost (TGE x EUR/PLN at signing) + margin
+  seasonal_amplitude: 0.35         # contracted volume profile: winter peak
+  demand_ar1: 0.7                  # synthetic demand deviation (weather-like AR(1))
+  demand_sd: 0.08
+  ttf_hedge_ratio: 0.70            # TTF futures = ratio x remaining contracted volume
+  fx_hedge_ratio: 0.70             # EUR forward = ratio x remaining contracted volume x plan TGE price in EUR
+
 diagnostics:
   alpha: 0.05
   ljung_box_lags: [5, 10, 20]

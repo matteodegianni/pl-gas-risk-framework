@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility), 5 (VaR and ES), 6 (VaR backtesting), 7 (limits) and 8 (stress testing) complete.** Later stages are not built yet.
+> Status: **Phase 1 (core market risk, Stages 1-9) complete.** Phase 2 (derivatives, margin and credit) and Phase 3 (framework and delivery) are not built yet.
 
 ## Repository layout
 
@@ -33,6 +33,8 @@ src/gasrisk/
   limits_report.py        generated Stage 7 report and figure
   stress.py               Stage 8: sensitivities, historical and hypothetical scenarios, reverse stress
   stress_report.py        generated Stage 8 report
+  attribution.py          Stage 9: daily P&L attribution of a synthetic supply contract
+  attribution_report.py   generated Stage 9 report and figure
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -65,6 +67,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.backtest      # Stage 6
 .venv/bin/python -m gasrisk.limits        # Stage 7
 .venv/bin/python -m gasrisk.stress        # Stage 8
+.venv/bin/python -m gasrisk.attribution   # Stage 9
 ```
 
 ```bash
@@ -156,6 +159,14 @@ Generated results: [outputs/stage8_report.md](outputs/stage8_report.md). Today's
 
 - Sensitivities per +1 PLN/MWh TGE, +1 EUR/MWh TTF and +0.01 EUR/PLN, plus a grid of larger moves; worst 1/5/10/21-day joint moves in the 2021-2022 crisis and named episodes; hypothetical shocks (TTF +50% alone, gas complex +/-50%, EUR/PLN +5%, combined, basis widening); reverse stress against the VaR limit.
 - Key findings (from the generated report): P&L is -500,000 PLN per +1 PLN/MWh TGE and +1,537,375 PLN per +1 EUR/MWh TTF. The worst scenario is the worst 21-day crisis move (November 2022: TGE +355.0%, TTF +18.6%), a loss of 689,596,369 PLN or 37.64x today's 99% VaR; the TGE leg accounts for 103.3% of it because the month-ahead TTF hedge does not follow TGE day-ahead spikes. A relative TGE rise of 0.1231 alone would lose the 25,000,000 PLN VaR limit.
+
+## Stage 9 - P&L attribution
+
+Generated results: [outputs/stage9_report.md](outputs/stage9_report.md). Contract, demand and hedges are **synthetic**.
+
+- One-year fixed-price PLN supply contract with a winter-peak contracted profile and synthetic AR(1) demand deviations; purchases at TGE, TTF futures and EUR forward hedges sized on the remaining volume.
+- Daily P&L split sequentially and exactly into plan margin, volume effect, price effect (TGE purchases and TTF hedge at plan FX) and FX effect (purchase cost, hedge translation, forward); reconciliation enforced in code and by tests.
+- Key findings (from the generated report): total P&L 1,565,811 PLN against a plan margin of 10,000,000 PLN; the price effect is -7,936,717 PLN, with purchases at -38,096,776 PLN partly offset by the TTF hedge at +30,160,059 PLN; maximum daily reconciliation residual 9.313e-10 PLN.
 
 ## Data sources and credits
 
