@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "FactMarginForecast.day",
-              "nativeQueryRef": "day"
+              "nativeQueryRef": "day",
+              "displayName": "Day"
             }
           ]
         },
@@ -45,7 +46,8 @@
                 }
               },
               "queryRef": "FactMarginForecast.Margin Outflow Mean",
-              "nativeQueryRef": "Margin Outflow Mean"
+              "nativeQueryRef": "Margin Outflow Mean",
+              "displayName": "Mean"
             },
             {
               "field": {
@@ -59,7 +61,8 @@
                 }
               },
               "queryRef": "FactMarginForecast.Margin Outflow 95",
-              "nativeQueryRef": "Margin Outflow 95"
+              "nativeQueryRef": "Margin Outflow 95",
+              "displayName": "95%"
             },
             {
               "field": {
@@ -73,7 +76,8 @@
                 }
               },
               "queryRef": "FactMarginForecast.Margin Outflow 99",
-              "nativeQueryRef": "Margin Outflow 99"
+              "nativeQueryRef": "Margin Outflow 99",
+              "displayName": "99%"
             }
           ]
         }
@@ -101,6 +105,48 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'EUR'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Business day'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

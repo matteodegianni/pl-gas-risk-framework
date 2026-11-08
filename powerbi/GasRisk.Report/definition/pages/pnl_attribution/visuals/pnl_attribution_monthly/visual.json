@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "DimDate.year_month",
-              "nativeQueryRef": "year_month"
+              "nativeQueryRef": "year_month",
+              "displayName": "Month"
             }
           ]
         },
@@ -45,7 +46,8 @@
                 }
               },
               "queryRef": "FactAttribution.Attributed P&L",
-              "nativeQueryRef": "Attributed P&L"
+              "nativeQueryRef": "Attributed P&L",
+              "displayName": "P&L"
             }
           ]
         },
@@ -63,7 +65,8 @@
                 }
               },
               "queryRef": "DimDriver.driver_group",
-              "nativeQueryRef": "driver_group"
+              "nativeQueryRef": "driver_group",
+              "displayName": "Driver group"
             }
           ]
         }
@@ -91,6 +94,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'PLN'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

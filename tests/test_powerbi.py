@@ -139,3 +139,56 @@ def test_minimal_report_is_one_page_on_the_same_model() -> None:
     assert meta["pageOrder"] == [meta["activePageName"]]
     pbir = json.loads((rep / "definition.pbir").read_text(encoding="utf-8"))
     assert pbir["datasetReference"]["byPath"]["path"] == "../GasRisk.SemanticModel"
+
+
+# --------------------------------------------------------------------------- presentation rules
+
+
+def _visual(page, name):
+    return ROOT / "powerbi" / "GasRisk.Report/definition/pages" / page / "visuals" / name / "visual.json"
+
+
+def test_presentation_rules_catch_the_first_review_findings(tmp_path) -> None:
+    v = _load("validate_pbip")
+    tables = {"DimScenario": {}}
+    data = {"DimScenario": __import__("pandas").read_csv(ROOT / "exports" / "dim_scenario.csv")}
+    tests = json.loads(_visual("backtesting", "backtesting_tests").read_text(encoding="utf-8"))
+    card = json.loads(_visual("risk_overview", "risk_overview_var_card").read_text(encoding="utf-8"))
+    bar = json.loads(_visual("stress_margin", "stress_margin_stress_bar").read_text(encoding="utf-8"))
+    for vis in (tests, card, bar):
+        assert v.presentation_errors(vis, tables, data, "x") == []
+    del tests["visual"]["objects"]["total"]
+    del card["visual"]["objects"]["categoryLabels"]
+    bar["visual"]["query"]["queryState"]["Category"]["projections"][0]["field"]["Column"]["Property"] = "scenario"
+    assert "total row" in v.presentation_errors(tests, tables, data, "x")[0]
+    assert "category label" in v.presentation_errors(card, tables, data, "x")[0]
+    assert "labels up to" in v.presentation_errors(bar, tables, data, "x")[0]
+
+
+def test_money_cards_show_millions_with_two_decimals() -> None:
+    card = json.loads(_visual("stress_margin", "stress_margin_im_card").read_text(encoding="utf-8"))
+    lab = card["visual"]["objects"]["labels"][0]["properties"]
+    assert lab["labelDisplayUnits"]["expr"]["Literal"]["Value"] == "1000000D"
+    assert lab["labelPrecision"]["expr"]["Literal"]["Value"] == "2L"
+
+
+def test_backtest_line_plots_var_as_a_negative_threshold() -> None:
+    import re
+
+    tmdl = (ROOT / "powerbi/GasRisk.SemanticModel/definition/tables/FactVaR.tmdl").read_text(encoding="utf-8")
+    assert re.search(r"measure 'Official VaR 99 Loss Threshold' = - \[Official VaR 99\]", tmdl)
+    line = json.loads(_visual("backtesting", "backtesting_pnl_line").read_text(encoding="utf-8"))
+    ys = [p["field"]["Measure"]["Property"] for p in line["visual"]["query"]["queryState"]["Y"]["projections"]]
+    assert ys == ["Realised P&L", "Official VaR 99 Loss Threshold"]
+
+
+def test_short_scenario_labels_are_unique_and_short() -> None:
+    import pandas as pd
+
+    from gasrisk.export import SHORT_SCENARIO_MAX, short_scenario
+
+    d = pd.read_csv(ROOT / "exports" / "dim_scenario.csv")
+    assert d["scenario_short"].is_unique
+    assert d["scenario_short"].str.len().max() <= SHORT_SCENARIO_MAX
+    assert short_scenario("worst 5-day crisis move") == "Crisis worst 5d"
+    assert short_scenario("x" * 40) == "x" * 23 + "."

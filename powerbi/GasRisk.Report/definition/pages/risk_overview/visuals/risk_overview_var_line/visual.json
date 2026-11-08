@@ -45,7 +45,8 @@
                 }
               },
               "queryRef": "FactVaR.Official VaR 99",
-              "nativeQueryRef": "Official VaR 99"
+              "nativeQueryRef": "Official VaR 99",
+              "displayName": "Official 99% VaR"
             },
             {
               "field": {
@@ -59,7 +60,8 @@
                 }
               },
               "queryRef": "FactVaR.VaR Limit",
-              "nativeQueryRef": "VaR Limit"
+              "nativeQueryRef": "VaR Limit",
+              "displayName": "VaR limit"
             }
           ]
         }
@@ -87,6 +89,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'PLN'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

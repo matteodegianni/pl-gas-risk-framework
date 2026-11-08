@@ -45,7 +45,8 @@
                 }
               },
               "queryRef": "FactVaR.Realised P&L",
-              "nativeQueryRef": "Realised P&L"
+              "nativeQueryRef": "Realised P&L",
+              "displayName": "Realised P&L"
             },
             {
               "field": {
@@ -55,11 +56,12 @@
                       "Entity": "FactVaR"
                     }
                   },
-                  "Property": "Official VaR 99"
+                  "Property": "Official VaR 99 Loss Threshold"
                 }
               },
-              "queryRef": "FactVaR.Official VaR 99",
-              "nativeQueryRef": "Official VaR 99"
+              "queryRef": "FactVaR.Official VaR 99 Loss Threshold",
+              "nativeQueryRef": "Official VaR 99 Loss Threshold",
+              "displayName": "-VaR 99 (loss threshold)"
             }
           ]
         }
@@ -79,7 +81,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Realised next-day P&L and official 99% VaR (PLN)'"
+                  "Value": "'Realised next-day P&L against the official 99% VaR loss threshold (PLN): exceptions fall below the line'"
                 }
               }
             }
@@ -87,6 +89,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'PLN'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

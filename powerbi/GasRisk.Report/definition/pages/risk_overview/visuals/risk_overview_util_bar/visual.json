@@ -45,7 +45,8 @@
                 }
               },
               "queryRef": "FactLimitUtilisation.Latest Utilisation",
-              "nativeQueryRef": "Latest Utilisation"
+              "nativeQueryRef": "Latest Utilisation",
+              "displayName": "Utilisation"
             }
           ]
         }
@@ -73,6 +74,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Share of limit'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

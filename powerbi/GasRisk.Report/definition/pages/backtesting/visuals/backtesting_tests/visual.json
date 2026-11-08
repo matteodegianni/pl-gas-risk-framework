@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "backtesting_tests",
   "position": {
-    "x": 860,
+    "x": 560,
     "y": 90,
     "z": 2,
-    "width": 400,
+    "width": 700,
     "height": 300,
     "tabOrder": 2
   },
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "DimMethod.method_name",
-              "nativeQueryRef": "method_name"
+              "nativeQueryRef": "method_name",
+              "displayName": "Method"
             },
             {
               "field": {
@@ -41,7 +42,8 @@
                 }
               },
               "queryRef": "FactBacktest.level",
-              "nativeQueryRef": "level"
+              "nativeQueryRef": "level",
+              "displayName": "Level"
             },
             {
               "field": {
@@ -55,7 +57,8 @@
                 }
               },
               "queryRef": "FactBacktest.Observed Exceptions",
-              "nativeQueryRef": "Observed Exceptions"
+              "nativeQueryRef": "Observed Exceptions",
+              "displayName": "Observed"
             },
             {
               "field": {
@@ -69,7 +72,8 @@
                 }
               },
               "queryRef": "FactBacktest.Expected Exceptions",
-              "nativeQueryRef": "Expected Exceptions"
+              "nativeQueryRef": "Expected Exceptions",
+              "displayName": "Expected"
             },
             {
               "field": {
@@ -83,7 +87,23 @@
                 }
               },
               "queryRef": "FactBacktest.Kupiec p",
-              "nativeQueryRef": "Kupiec p"
+              "nativeQueryRef": "Kupiec p",
+              "displayName": "Kupiec p"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactBacktest"
+                    }
+                  },
+                  "Property": "Kupiec Result"
+                }
+              },
+              "queryRef": "FactBacktest.Kupiec Result",
+              "nativeQueryRef": "Kupiec Result",
+              "displayName": "Kupiec"
             },
             {
               "field": {
@@ -97,7 +117,23 @@
                 }
               },
               "queryRef": "FactBacktest.Conditional Coverage p",
-              "nativeQueryRef": "Conditional Coverage p"
+              "nativeQueryRef": "Conditional Coverage p",
+              "displayName": "Christoffersen CC p"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "FactBacktest"
+                    }
+                  },
+                  "Property": "Coverage Result"
+                }
+              },
+              "queryRef": "FactBacktest.Coverage Result",
+              "nativeQueryRef": "Coverage Result",
+              "displayName": "CC"
             }
           ]
         }
@@ -125,6 +161,47 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "total": [
+        {
+          "properties": {
+            "totals": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "columnHeaders": [
+        {
+          "properties": {
+            "wordWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "values": [
+        {
+          "properties": {
+            "wordWrap": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

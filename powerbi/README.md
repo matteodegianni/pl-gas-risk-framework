@@ -10,7 +10,7 @@ open in Desktop is also its first real test: use the checklist below.
 
 ```text
 GasRisk.pbip                       open this file in Power BI Desktop
-GasRisk.SemanticModel/             TMDL: 17 tables, 15 relationships, 53 DAX measures
+GasRisk.SemanticModel/             TMDL: 17 tables, 15 relationships, 56 DAX measures
   definition/model.tmdl            model settings and table list
   definition/expressions.tmdl      DataFolder parameter and fnLoadCsv loader
   definition/relationships.tmdl    star schema (many-to-one, single direction)
@@ -45,11 +45,22 @@ cumulative P&L, counterparty exposure, PFE and limit use.
 
 1. **Risk overview**: official 99% VaR today, VaR limit, limits in breach; VaR against the limit over time;
    utilisation today and over time by limit; breach and amber days.
-2. **Backtesting**: observed and expected 99% exceptions by method; Kupiec and Christoffersen p-values; realised P&L
-   against the official VaR.
+2. **Backtesting**: observed and expected 99% exceptions by method; Kupiec and Christoffersen p-values with pass or
+   fail; realised P&L against the official VaR plotted as a negative loss threshold (-VaR), so exceptions are the
+   points below the line.
 3. **Stress and margin**: stress loss by scenario split by risk factor; 10-day margin forecast (mean, 95%, 99%);
    initial margin, liquidity buffer and its share of the bank credit line; stress margin calls.
 4. **P&L attribution**: contract P&L; P&L by driver; cumulative P&L; monthly P&L by driver group.
+
+## Formatting
+
+- Money cards show millions with 2 decimals (for example 3.68M); count and percentage cards keep their own format.
+  Card titles name the figure, so the category label under the value is hidden.
+- Tables have no total row: sums of p-values, test levels, breach days across limits or utilisations mean nothing.
+- Stress charts use `scenario_short` from `dim_scenario` (at most 24 characters, built by
+  `gasrisk.export.short_scenario`); the full name stays in `scenario`.
+- Series and columns carry short display names (Mean, 95%, 99%; Observed, Expected), and value axes are titled with
+  the unit (PLN, EUR).
 
 ## How to open
 
@@ -91,9 +102,11 @@ To refresh the data after a pipeline run: `python -m gasrisk.pipeline` rewrites 
   October 2026 (Desktop 2.159); `report.json` has a base theme and every resource-package file exists; no legacy
   `report.json` sits next to `definition/`.
 - Report content: every field used by a visual exists as a column or measure; every page has the synthetic-data label.
+- Presentation (rules added after the first review in Desktop): no table has a total row; no card shows the
+  category label under its value; labels on a horizontal bar chart axis are at most 24 characters in the data.
 - The validator was tested by injecting errors (unknown column, unknown measure, invalid page property, extra visual
   property, broken relationship, a measure named like a column, a duplicate measure name, and 13 broken report
-  structures in `tests/test_powerbi.py`); it reported all of them.
+  structures and the three presentation findings in `tests/test_powerbi.py`); it reported all of them.
 
 ### Page-activation failure in Desktop 2.159 (fixed)
 

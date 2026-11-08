@@ -1,20 +1,20 @@
-scenario_key,scenario,scenario_type,data_label
-1,worst 1-day crisis move,historical,synthetic book on real market data
-2,worst 5-day crisis move,historical,synthetic book on real market data
-3,worst 10-day crisis move,historical,synthetic book on real market data
-4,worst 21-day crisis move,historical,synthetic book on real market data
-5,Russian invasion of Ukraine,historical,synthetic book on real market data
-6,August 2022 price peak run-up,historical,synthetic book on real market data
-7,Autumn 2021 squeeze,historical,synthetic book on real market data
-8,TTF +50% only (TGE unchanged),hypothetical,synthetic book on real market data
-9,gas complex +50% (TGE and TTF),hypothetical,synthetic book on real market data
-10,gas complex -50% (TGE and TTF),hypothetical,synthetic book on real market data
-11,EUR/PLN +5%,hypothetical,synthetic book on real market data
-12,combined: gas complex +50% and EUR/PLN +5%,hypothetical,synthetic book on real market data
-13,"basis widening: TGE +10 EUR/MWh, TTF unchanged",hypothetical,synthetic book on real market data
-14,"basis widening: TGE +25 EUR/MWh, TTF unchanged",hypothetical,synthetic book on real market data
-15,worst 1-day TTF fall in crisis,margin-specific historical,synthetic book on real market data
-16,worst 5-day TTF fall in crisis,margin-specific historical,synthetic book on real market data
-17,worst 10-day TTF fall in crisis,margin-specific historical,synthetic book on real market data
-18,worst 21-day TTF fall in crisis,margin-specific historical,synthetic book on real market data
-19,"volatility stress: crisis 99th percentile volatility, price unchanged",margin-specific,synthetic book on real market data
+scenario_key,scenario,scenario_short,scenario_type,data_label
+1,worst 1-day crisis move,Crisis worst 1d,historical,synthetic book on real market data
+2,worst 5-day crisis move,Crisis worst 5d,historical,synthetic book on real market data
+3,worst 10-day crisis move,Crisis worst 10d,historical,synthetic book on real market data
+4,worst 21-day crisis move,Crisis worst 21d,historical,synthetic book on real market data
+5,Russian invasion of Ukraine,Ukraine invasion,historical,synthetic book on real market data
+6,August 2022 price peak run-up,Aug 2022 peak run-up,historical,synthetic book on real market data
+7,Autumn 2021 squeeze,Autumn 2021 squeeze,historical,synthetic book on real market data
+8,TTF +50% only (TGE unchanged),TTF +50% only,hypothetical,synthetic book on real market data
+9,gas complex +50% (TGE and TTF),Gas +50%,hypothetical,synthetic book on real market data
+10,gas complex -50% (TGE and TTF),Gas -50%,hypothetical,synthetic book on real market data
+11,EUR/PLN +5%,EUR/PLN +5%,hypothetical,synthetic book on real market data
+12,combined: gas complex +50% and EUR/PLN +5%,"Gas +50%, EUR/PLN +5%",hypothetical,synthetic book on real market data
+13,"basis widening: TGE +10 EUR/MWh, TTF unchanged",Basis TGE +10 EUR/MWh,hypothetical,synthetic book on real market data
+14,"basis widening: TGE +25 EUR/MWh, TTF unchanged",Basis TGE +25 EUR/MWh,hypothetical,synthetic book on real market data
+15,worst 1-day TTF fall in crisis,TTF fall worst 1d,margin-specific historical,synthetic book on real market data
+16,worst 5-day TTF fall in crisis,TTF fall worst 5d,margin-specific historical,synthetic book on real market data
+17,worst 10-day TTF fall in crisis,TTF fall worst 10d,margin-specific historical,synthetic book on real market data
+18,worst 21-day TTF fall in crisis,TTF fall worst 21d,margin-specific historical,synthetic book on real market data
+19,"volatility stress: crisis 99th percentile volatility, price unchanged",Vol stress (crisis p99),margin-specific,synthetic book on real market data

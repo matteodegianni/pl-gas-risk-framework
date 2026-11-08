@@ -17,6 +17,14 @@ table DimScenario
 
 		annotation SummarizationSetBy = Automatic
 
+	column scenario_short
+		dataType: string
+		lineageTag: e6aca890-d44c-585f-94d6-108dced2a7ee
+		summarizeBy: none
+		sourceColumn: scenario_short
+
+		annotation SummarizationSetBy = Automatic
+
 	column scenario_type
 		dataType: string
 		lineageTag: 0b63660b-6321-5ee8-9c98-bfb610b9e1cc
@@ -38,7 +46,7 @@ table DimScenario
 		source =
 				let
 				    Source = fnLoadCsv("dim_scenario"),
-				    Typed = Table.TransformColumnTypes(Source, {{"scenario_key", Int64.Type}, {"scenario", type text}, {"scenario_type", type text}, {"data_label", type text}}, "en-US")
+				    Typed = Table.TransformColumnTypes(Source, {{"scenario_key", Int64.Type}, {"scenario", type text}, {"scenario_short", type text}, {"scenario_type", type text}, {"data_label", type text}}, "en-US")
 				in
 				    Typed
 

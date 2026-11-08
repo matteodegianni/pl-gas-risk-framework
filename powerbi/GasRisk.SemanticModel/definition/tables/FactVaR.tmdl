@@ -35,6 +35,10 @@ table FactVaR
 		formatString: #,0
 		lineageTag: 314af7ca-c8ed-5da6-90c2-17113f54d2d0
 
+	measure 'Official VaR 99 Loss Threshold' = - [Official VaR 99]
+		formatString: #,0
+		lineageTag: 7c93dd9c-1536-5225-bab3-b94a9a4f147f
+
 	measure 'Exceptions 95' = SUM ( FactVaR[exception_95] )
 		formatString: 0
 		lineageTag: d064e667-eda3-5767-8a7e-327bc73cc0b5

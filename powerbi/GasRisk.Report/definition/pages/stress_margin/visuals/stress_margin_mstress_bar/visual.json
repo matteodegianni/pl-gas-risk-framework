@@ -23,11 +23,12 @@
                       "Entity": "DimScenario"
                     }
                   },
-                  "Property": "scenario"
+                  "Property": "scenario_short"
                 }
               },
-              "queryRef": "DimScenario.scenario",
-              "nativeQueryRef": "scenario"
+              "queryRef": "DimScenario.scenario_short",
+              "nativeQueryRef": "scenario_short",
+              "displayName": "Scenario"
             }
           ]
         },
@@ -45,7 +46,8 @@
                 }
               },
               "queryRef": "FactMarginStress.Stress Margin Call",
-              "nativeQueryRef": "Stress Margin Call"
+              "nativeQueryRef": "Stress Margin Call",
+              "displayName": "Margin call"
             }
           ]
         }
@@ -73,6 +75,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'EUR'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

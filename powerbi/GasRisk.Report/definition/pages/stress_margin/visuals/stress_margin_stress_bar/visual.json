@@ -23,11 +23,12 @@
                       "Entity": "DimScenario"
                     }
                   },
-                  "Property": "scenario"
+                  "Property": "scenario_short"
                 }
               },
-              "queryRef": "DimScenario.scenario",
-              "nativeQueryRef": "scenario"
+              "queryRef": "DimScenario.scenario_short",
+              "nativeQueryRef": "scenario_short",
+              "displayName": "Scenario"
             }
           ]
         },
@@ -45,7 +46,8 @@
                 }
               },
               "queryRef": "FactStress.Stress Loss",
-              "nativeQueryRef": "Stress Loss"
+              "nativeQueryRef": "Stress Loss",
+              "displayName": "Loss"
             }
           ]
         },
@@ -63,7 +65,8 @@
                 }
               },
               "queryRef": "DimRiskFactor.factor_name",
-              "nativeQueryRef": "factor_name"
+              "nativeQueryRef": "factor_name",
+              "displayName": "Risk factor"
             }
           ]
         }
@@ -91,6 +94,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'PLN'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

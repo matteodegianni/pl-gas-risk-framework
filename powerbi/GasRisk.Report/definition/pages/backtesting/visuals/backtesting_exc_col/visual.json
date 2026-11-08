@@ -5,7 +5,7 @@
     "x": 20,
     "y": 90,
     "z": 1,
-    "width": 820,
+    "width": 520,
     "height": 300,
     "tabOrder": 1
   },
@@ -45,7 +45,8 @@
                 }
               },
               "queryRef": "FactVaR.Exceptions 99",
-              "nativeQueryRef": "Exceptions 99"
+              "nativeQueryRef": "Exceptions 99",
+              "displayName": "Observed"
             },
             {
               "field": {
@@ -59,7 +60,8 @@
                 }
               },
               "queryRef": "FactVaR.Expected Exceptions 99",
-              "nativeQueryRef": "Expected Exceptions 99"
+              "nativeQueryRef": "Expected Exceptions 99",
+              "displayName": "Expected"
             }
           ]
         }
@@ -87,6 +89,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Exceptions'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

@@ -67,6 +67,7 @@ MEASURES: dict[str, list[tuple[str, str, str]]] = {
          "RETURN CALCULATE ( [Official VaR 99], ALL ( DimDate ), FactVaR[date] = d )", "#,0"),
         ("VaR Limit", "CALCULATE ( MAX ( DimLimit[limit_value] ), DimLimit[limit_key] = \"var_99\" )", "#,0"),
         ("Realised P&L", "SUM ( FactVaR[realised_pnl_next_day] )", "#,0"),
+        ("Official VaR 99 Loss Threshold", "- [Official VaR 99]", "#,0"),
         ("Exceptions 95", "SUM ( FactVaR[exception_95] )", "0"),
         ("Exceptions 99", "SUM ( FactVaR[exception_99] )", "0"),
         ("Expected Exceptions 99", "COUNT ( FactVaR[realised_pnl_next_day] ) * 0.01", "0.0"),
@@ -79,6 +80,10 @@ MEASURES: dict[str, list[tuple[str, str, str]]] = {
         ("Kupiec p", "AVERAGE ( FactBacktest[p_pof] )", "0.0000"),
         ("Conditional Coverage p", "AVERAGE ( FactBacktest[p_cc] )", "0.0000"),
         ("Tests Passed", "COUNTROWS ( FILTER ( FactBacktest, FactBacktest[pass_cc] = TRUE () ) )", "0"),
+        ("Kupiec Result",
+         "IF ( COUNTROWS ( FILTER ( FactBacktest, FactBacktest[pass_pof] = FALSE () ) ) > 0, \"fail\", \"pass\" )", ""),
+        ("Coverage Result",
+         "IF ( COUNTROWS ( FILTER ( FactBacktest, FactBacktest[pass_cc] = FALSE () ) ) > 0, \"fail\", \"pass\" )", ""),
     ],
     "FactLimitUtilisation": [
         ("Limit Utilisation %", "AVERAGE ( FactLimitUtilisation[utilisation] )", "0.00%"),
@@ -189,9 +194,11 @@ def table_tmdl(table: str, file: str, df: pd.DataFrame) -> str:
             lines.append("\t\tisKey")
         if dt == "dateTime":
             lines.append("\t\tformatString: yyyy-mm-dd")
+        if c == "level":
+            lines.append("\t\tformatString: 0%")
         lines.append(f"\t\tlineageTag: {gid(table, c)}")
         lines.append("\t\tsummarizeBy: none" if dt in ("string", "dateTime", "boolean") or c.endswith("_key") or c in
-                     ("year", "month", "grade", "day", "is_official", "is_weekend") else "\t\tsummarizeBy: sum")
+                     ("year", "month", "grade", "day", "is_official", "is_weekend", "level") else "\t\tsummarizeBy: sum")
         lines.append(f"\t\tsourceColumn: {c}")
         lines += ["", "\t\tannotation SummarizationSetBy = Automatic", ""]
     type_list = ", ".join(f'{{"{c}", {pq}}}' for c, (_, pq) in types.items())
@@ -265,106 +272,155 @@ def semantic_model(frames: dict[str, pd.DataFrame]) -> dict[str, str]:
 # --------------------------------------------------------------------------- report (PBIR)
 
 
-def col(table: str, column: str) -> dict:
-    return {"field": {"Column": {"Expression": {"SourceRef": {"Entity": table}}, "Property": column}},
-            "queryRef": f"{table}.{column}", "nativeQueryRef": column}
+def col(table: str, column: str, display: str | None = None) -> dict:
+    p = {"field": {"Column": {"Expression": {"SourceRef": {"Entity": table}}, "Property": column}},
+         "queryRef": f"{table}.{column}", "nativeQueryRef": column}
+    return {**p, "displayName": display} if display else p
 
 
-def mea(table: str, measure: str) -> dict:
-    return {"field": {"Measure": {"Expression": {"SourceRef": {"Entity": table}}, "Property": measure}},
-            "queryRef": f"{table}.{measure}", "nativeQueryRef": measure}
+def mea(table: str, measure: str, display: str | None = None) -> dict:
+    p = {"field": {"Measure": {"Expression": {"SourceRef": {"Entity": table}}, "Property": measure}},
+         "queryRef": f"{table}.{measure}", "nativeQueryRef": measure}
+    return {**p, "displayName": display} if display else p
 
 
-def visual(name: str, vtype: str, x: int, y: int, w: int, h: int, roles: dict[str, list[dict]], title: str, z: int) -> dict:
-    return {
+def lit(value) -> dict:
+    """PBIR literal: bool, int (L), float (D) or text (quoted)."""
+    if isinstance(value, bool):
+        v = "true" if value else "false"
+    elif isinstance(value, int):
+        v = f"{value}L"
+    elif isinstance(value, float):
+        v = f"{int(value)}D" if value.is_integer() else f"{value!r}D"
+    else:
+        v = "'" + str(value).replace("'", "''") + "'"
+    return {"expr": {"Literal": {"Value": v}}}
+
+
+def props(**kw) -> list[dict]:
+    return [{"properties": {k: lit(v) for k, v in kw.items()}}]
+
+
+def visual(name: str, vtype: str, x: int, y: int, w: int, h: int, roles: dict[str, list[dict]], title: str, z: int,
+           objects: dict | None = None) -> dict:
+    v = {
         "$schema": f"{SCHEMA}/item/report/definition/visualContainer/1.0.0/schema.json",
         "name": name,
         "position": {"x": x, "y": y, "z": z, "width": w, "height": h, "tabOrder": z},
         "visual": {
             "visualType": vtype,
             "query": {"queryState": {role: {"projections": p} for role, p in roles.items()}},
-            "visualContainerObjects": {"title": [{"properties": {
-                "show": {"expr": {"Literal": {"Value": "true"}}},
-                "text": {"expr": {"Literal": {"Value": "'" + title.replace("'", "''") + "'"}}}}}]},
+            "visualContainerObjects": {"title": props(show=True, text=title)},
             "drillFilterOtherVisuals": True,
         },
     }
+    if objects:
+        v["visual"]["objects"] = objects
+    return v
+
+
+# Cards: the title names the figure, so the category label under the value is hidden (it was clipped and repeated the
+# title). Money cards show millions with 2 decimals (3.68M rather than 4M).
+def card(name: str, x: int, y: int, w: int, h: int, field: dict, title: str, z: int, millions: bool = True) -> dict:
+    labels = {"labelDisplayUnits": 1000000.0, "labelPrecision": 2} if millions else {}
+    return visual(name, "card", x, y, w, h, {"Values": [field]}, title, z,
+                  {"labels": props(**labels) if labels else props(labelDisplayUnits=1.0), "categoryLabels": props(show=False)})
+
+
+# Tables: no total row (sums of p-values, test levels, breach days per limit or utilisations are meaningless),
+# headers wrap so every column fits.
+def table(name: str, x: int, y: int, w: int, h: int, fields: list[dict], title: str, z: int) -> dict:
+    return visual(name, "tableEx", x, y, w, h, {"Values": fields}, title, z,
+                  {"total": props(totals=False), "columnHeaders": props(wordWrap=True), "values": props(wordWrap=True)})
+
+
+def axis_titles(value: str, category: str | None = None) -> dict:
+    o = {"valueAxis": props(showAxisTitle=True, titleText=value)}
+    if category:
+        o["categoryAxis"] = props(showAxisTitle=True, titleText=category)
+    return o
 
 
 def label_card(page: str, z: int) -> dict:
-    return visual(f"{page}_label", "card", 900, 10, 360, 70, {"Values": [mea("FactVaR", "Data Label")]},
-                  "Data: synthetic book on real market data", z)
+    # Synthetic-data label: small value font so the whole text fits the box.
+    return visual(f"{page}_label", "card", 900, 10, 360, 70, {"Values": [mea("FactVaR", "Data Label")]}, "Data", z,
+                  {"labels": props(fontSize=11.0), "categoryLabels": props(show=False)})
 
 
 PAGES = [
     ("risk_overview", "Risk overview", lambda p: [
         label_card(p, 0),
-        visual(f"{p}_var_card", "card", 20, 10, 270, 110, {"Values": [mea("FactVaR", "Latest Official VaR 99")]},
-               "Official 99% VaR today (PLN)", 1),
-        visual(f"{p}_limit_card", "card", 300, 10, 270, 110, {"Values": [mea("FactVaR", "VaR Limit")]}, "VaR limit (PLN)", 2),
-        visual(f"{p}_breach_card", "card", 580, 10, 300, 110, {"Values": [mea("FactLimitUtilisation", "Limits In Breach Today")]},
-               "Limits in breach today", 3),
+        card(f"{p}_var_card", 20, 10, 270, 110, mea("FactVaR", "Latest Official VaR 99"), "Official 99% VaR today (PLN)", 1),
+        card(f"{p}_limit_card", 300, 10, 270, 110, mea("FactVaR", "VaR Limit"), "VaR limit (PLN)", 2),
+        card(f"{p}_breach_card", 580, 10, 300, 110, mea("FactLimitUtilisation", "Limits In Breach Today"),
+             "Limits in breach today", 3, millions=False),
         visual(f"{p}_var_line", "lineChart", 20, 130, 820, 330,
-               {"Category": [col("DimDate", "date")], "Y": [mea("FactVaR", "Official VaR 99"), mea("FactVaR", "VaR Limit")]},
-               "Official 99% VaR against the limit (PLN)", 4),
+               {"Category": [col("DimDate", "date")],
+                "Y": [mea("FactVaR", "Official VaR 99", "Official 99% VaR"), mea("FactVaR", "VaR Limit", "VaR limit")]},
+               "Official 99% VaR against the limit (PLN)", 4, axis_titles("PLN")),
         visual(f"{p}_util_bar", "clusteredBarChart", 860, 130, 400, 330,
-               {"Category": [col("DimLimit", "limit_name")], "Y": [mea("FactLimitUtilisation", "Latest Utilisation")]},
-               "Limit utilisation today", 5),
+               {"Category": [col("DimLimit", "limit_name")], "Y": [mea("FactLimitUtilisation", "Latest Utilisation", "Utilisation")]},
+               "Limit utilisation today", 5, axis_titles("Share of limit")),
         visual(f"{p}_util_line", "lineChart", 20, 470, 820, 240,
-               {"Category": [col("DimDate", "date")], "Y": [mea("FactLimitUtilisation", "Limit Utilisation %")],
-                "Series": [col("DimLimit", "limit_name")]}, "Utilisation history by limit", 6),
-        visual(f"{p}_breach_table", "tableEx", 860, 470, 400, 240,
-               {"Values": [col("DimLimit", "limit_name"), mea("FactLimitUtilisation", "Breach Days"),
-                           mea("FactLimitUtilisation", "Amber Days")]}, "Breach and amber days", 7),
+               {"Category": [col("DimDate", "date")], "Y": [mea("FactLimitUtilisation", "Limit Utilisation %", "Utilisation")],
+                "Series": [col("DimLimit", "limit_name")]}, "Utilisation history by limit", 6, axis_titles("Share of limit")),
+        table(f"{p}_breach_table", 860, 470, 400, 240,
+              [col("DimLimit", "limit_name", "Limit"), mea("FactLimitUtilisation", "Breach Days", "Breach days"),
+               mea("FactLimitUtilisation", "Amber Days", "Amber days")], "Breach and amber days", 7),
     ]),
     ("backtesting", "Backtesting", lambda p: [
         label_card(p, 0),
-        visual(f"{p}_exc_col", "clusteredColumnChart", 20, 90, 820, 300,
+        visual(f"{p}_exc_col", "clusteredColumnChart", 20, 90, 520, 300,
                {"Category": [col("DimMethod", "method_name")],
-                "Y": [mea("FactVaR", "Exceptions 99"), mea("FactVaR", "Expected Exceptions 99")]},
-               "99% VaR exceptions by method: observed and expected", 1),
-        visual(f"{p}_tests", "tableEx", 860, 90, 400, 300,
-               {"Values": [col("DimMethod", "method_name"), col("FactBacktest", "level"),
-                           mea("FactBacktest", "Observed Exceptions"), mea("FactBacktest", "Expected Exceptions"),
-                           mea("FactBacktest", "Kupiec p"), mea("FactBacktest", "Conditional Coverage p")]},
-               "Kupiec and Christoffersen tests", 2),
+                "Y": [mea("FactVaR", "Exceptions 99", "Observed"), mea("FactVaR", "Expected Exceptions 99", "Expected")]},
+               "99% VaR exceptions by method: observed and expected", 1, axis_titles("Exceptions")),
+        table(f"{p}_tests", 560, 90, 700, 300,
+              [col("DimMethod", "method_name", "Method"), col("FactBacktest", "level", "Level"),
+               mea("FactBacktest", "Observed Exceptions", "Observed"), mea("FactBacktest", "Expected Exceptions", "Expected"),
+               mea("FactBacktest", "Kupiec p", "Kupiec p"), mea("FactBacktest", "Kupiec Result", "Kupiec"),
+               mea("FactBacktest", "Conditional Coverage p", "Christoffersen CC p"),
+               mea("FactBacktest", "Coverage Result", "CC")], "Kupiec and Christoffersen tests", 2),
         visual(f"{p}_pnl_line", "lineChart", 20, 400, 1240, 310,
-               {"Category": [col("DimDate", "date")], "Y": [mea("FactVaR", "Realised P&L"), mea("FactVaR", "Official VaR 99")]},
-               "Realised next-day P&L and official 99% VaR (PLN)", 3),
+               {"Category": [col("DimDate", "date")],
+                "Y": [mea("FactVaR", "Realised P&L", "Realised P&L"),
+                      mea("FactVaR", "Official VaR 99 Loss Threshold", "-VaR 99 (loss threshold)")]},
+               "Realised next-day P&L against the official 99% VaR loss threshold (PLN): exceptions fall below the line", 3,
+               axis_titles("PLN")),
     ]),
     ("stress_margin", "Stress and margin", lambda p: [
         label_card(p, 0),
         visual(f"{p}_stress_bar", "barChart", 20, 90, 620, 330,
-               {"Category": [col("DimScenario", "scenario")], "Y": [mea("FactStress", "Stress Loss")],
-                "Series": [col("DimRiskFactor", "factor_name")]}, "Stress loss by scenario and risk factor (PLN)", 1),
+               {"Category": [col("DimScenario", "scenario_short", "Scenario")], "Y": [mea("FactStress", "Stress Loss", "Loss")],
+                "Series": [col("DimRiskFactor", "factor_name", "Risk factor")]}, "Stress loss by scenario and risk factor (PLN)", 1,
+               axis_titles("PLN")),
         visual(f"{p}_margin_col", "lineChart", 660, 90, 600, 330,
-               {"Category": [col("FactMarginForecast", "day")],
-                "Y": [mea("FactMarginForecast", "Margin Outflow Mean"), mea("FactMarginForecast", "Margin Outflow 95"),
-                      mea("FactMarginForecast", "Margin Outflow 99")]},
-               "Margin forecast: cumulative outflow over 10 days (EUR)", 2),
-        visual(f"{p}_im_card", "card", 660, 430, 290, 100, {"Values": [mea("FactMarginForecast", "Initial Margin Today")]},
-               "Initial margin today (EUR)", 3),
-        visual(f"{p}_buffer_card", "card", 970, 430, 290, 100, {"Values": [mea("FactMarginForecast", "Liquidity Buffer")]},
-               "10-day 99% liquidity buffer (EUR)", 4),
+               {"Category": [col("FactMarginForecast", "day", "Day")],
+                "Y": [mea("FactMarginForecast", "Margin Outflow Mean", "Mean"), mea("FactMarginForecast", "Margin Outflow 95", "95%"),
+                      mea("FactMarginForecast", "Margin Outflow 99", "99%")]},
+               "Margin forecast: cumulative outflow over 10 days (EUR)", 2, axis_titles("EUR", "Business day")),
+        card(f"{p}_im_card", 660, 430, 290, 100, mea("FactMarginForecast", "Initial Margin Today"), "Initial margin today (EUR)", 3),
+        card(f"{p}_buffer_card", 970, 430, 290, 100, mea("FactMarginForecast", "Liquidity Buffer"),
+             "10-day 99% liquidity buffer (EUR)", 4),
         visual(f"{p}_mstress_bar", "clusteredBarChart", 20, 430, 620, 280,
-               {"Category": [col("DimScenario", "scenario")], "Y": [mea("FactMarginStress", "Stress Margin Call")]},
-               "Stress margin calls (EUR)", 5),
-        visual(f"{p}_line_card", "card", 660, 540, 600, 100, {"Values": [mea("FactMarginForecast", "Buffer Over Credit Line")]},
-               "Buffer as a share of the bank credit line", 6),
+               {"Category": [col("DimScenario", "scenario_short", "Scenario")],
+                "Y": [mea("FactMarginStress", "Stress Margin Call", "Margin call")]},
+               "Stress margin calls (EUR)", 5, axis_titles("EUR")),
+        card(f"{p}_line_card", 660, 540, 600, 100, mea("FactMarginForecast", "Buffer Over Credit Line"),
+             "Buffer as a share of the bank credit line", 6, millions=False),
     ]),
     ("pnl_attribution", "P&L attribution", lambda p: [
         label_card(p, 0),
-        visual(f"{p}_total_card", "card", 20, 10, 270, 110, {"Values": [mea("FactAttribution", "Total P&L")]},
-               "Contract P&L since signing (PLN)", 1),
+        card(f"{p}_total_card", 20, 10, 270, 110, mea("FactAttribution", "Total P&L"), "Contract P&L since signing (PLN)", 1),
         visual(f"{p}_driver_bar", "clusteredBarChart", 20, 130, 560, 300,
-               {"Category": [col("DimDriver", "driver_name")], "Y": [mea("FactAttribution", "Attributed P&L")]},
-               "P&L by driver (PLN)", 2),
+               {"Category": [col("DimDriver", "driver_name", "Driver")], "Y": [mea("FactAttribution", "Attributed P&L", "P&L")]},
+               "P&L by driver (PLN)", 2, axis_titles("PLN")),
         visual(f"{p}_cum_line", "lineChart", 600, 130, 660, 300,
-               {"Category": [col("DimDate", "date")], "Y": [mea("FactAttribution", "Cumulative P&L")]},
-               "Cumulative contract P&L (PLN)", 3),
+               {"Category": [col("DimDate", "date")], "Y": [mea("FactAttribution", "Cumulative P&L", "Cumulative P&L")]},
+               "Cumulative contract P&L (PLN)", 3, axis_titles("PLN")),
         visual(f"{p}_monthly", "columnChart", 20, 440, 1240, 270,
-               {"Category": [col("DimDate", "year_month")], "Y": [mea("FactAttribution", "Attributed P&L")],
-                "Series": [col("DimDriver", "driver_group")]}, "Monthly P&L by driver group (PLN)", 4),
+               {"Category": [col("DimDate", "year_month", "Month")], "Y": [mea("FactAttribution", "Attributed P&L", "P&L")],
+                "Series": [col("DimDriver", "driver_group", "Driver group")]}, "Monthly P&L by driver group (PLN)", 4,
+               axis_titles("PLN")),
     ]),
 ]
 
@@ -378,8 +434,7 @@ MINIMAL_NAME = f"{NAME}Minimal"
 MINIMAL_PAGES = [
     ("minimal_test", "Minimal test", lambda p: [
         label_card(p, 0),
-        visual(f"{p}_var_card", "card", 20, 10, 270, 110, {"Values": [mea("FactVaR", "Latest Official VaR 99")]},
-               "Official 99% VaR today (PLN)", 1),
+        card(f"{p}_var_card", 20, 10, 270, 110, mea("FactVaR", "Latest Official VaR 99"), "Official 99% VaR today (PLN)", 1),
     ]),
 ]
 

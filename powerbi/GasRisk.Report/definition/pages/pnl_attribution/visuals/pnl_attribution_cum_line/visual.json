@@ -45,7 +45,8 @@
                 }
               },
               "queryRef": "FactAttribution.Cumulative P&L",
-              "nativeQueryRef": "Cumulative P&L"
+              "nativeQueryRef": "Cumulative P&L",
+              "displayName": "Cumulative P&L"
             }
           ]
         }
@@ -73,6 +74,28 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "objects": {
+      "valueAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'PLN'"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
   }
 }

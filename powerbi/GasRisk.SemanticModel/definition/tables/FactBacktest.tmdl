@@ -21,6 +21,12 @@ table FactBacktest
 		formatString: 0
 		lineageTag: 0cf1ae14-1c36-5545-ae63-af9d4402740b
 
+	measure 'Kupiec Result' = IF ( COUNTROWS ( FILTER ( FactBacktest, FactBacktest[pass_pof] = FALSE () ) ) > 0, "fail", "pass" )
+		lineageTag: 28f8566e-e29f-59a4-94cb-9e94738544e0
+
+	measure 'Coverage Result' = IF ( COUNTROWS ( FILTER ( FactBacktest, FactBacktest[pass_cc] = FALSE () ) ) > 0, "fail", "pass" )
+		lineageTag: 45cabca7-2549-52a7-a0b1-606d6b114122
+
 	column method_key
 		dataType: string
 		lineageTag: 8156fed2-1df0-55b8-9808-85f49d782394
@@ -31,8 +37,9 @@ table FactBacktest
 
 	column level
 		dataType: double
+		formatString: 0%
 		lineageTag: fa16f0e4-4528-5e65-8a40-00d990f12fb6
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: level
 
 		annotation SummarizationSetBy = Automatic

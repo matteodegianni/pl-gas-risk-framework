@@ -32,6 +32,36 @@ DRIVERS = {"plan_margin": ("Plan margin", "plan"), "volume_effect": ("Volume", "
            "fx_effect_forward": ("EUR forward", "fx")}
 
 
+SHORT_SCENARIO_MAX = 24  # characters: fits the category axis of the dashboard's stress charts
+SHORT_PATTERNS = [  # (regex on the full scenario name, short label template)
+    (r"^worst (\d+)-day crisis move$", "Crisis worst {0}d"),
+    (r"^worst (\d+)-day TTF fall in crisis$", "TTF fall worst {0}d"),
+    (r"^basis widening: TGE \+(\d+) EUR/MWh, TTF unchanged$", "Basis TGE +{0} EUR/MWh"),
+]
+SHORT_NAMES = {
+    "Russian invasion of Ukraine": "Ukraine invasion",
+    "August 2022 price peak run-up": "Aug 2022 peak run-up",
+    "TTF +50% only (TGE unchanged)": "TTF +50% only",
+    "gas complex +50% (TGE and TTF)": "Gas +50%",
+    "gas complex -50% (TGE and TTF)": "Gas -50%",
+    "combined: gas complex +50% and EUR/PLN +5%": "Gas +50%, EUR/PLN +5%",
+    "volatility stress: crisis 99th percentile volatility, price unchanged": "Vol stress (crisis p99)",
+}
+
+
+def short_scenario(name: str) -> str:
+    """Dashboard label for a scenario: a pattern, an explicit short name, the name itself if short, else truncated."""
+    import re
+
+    for pat, tpl in SHORT_PATTERNS:
+        m = re.match(pat, name)
+        if m:
+            return tpl.format(*m.groups())
+    if name in SHORT_NAMES:
+        return SHORT_NAMES[name]
+    return name if len(name) <= SHORT_SCENARIO_MAX else name[: SHORT_SCENARIO_MAX - 1].rstrip() + "."
+
+
 def _label(df: pd.DataFrame) -> pd.DataFrame:
     return df.assign(data_label=LABEL)
 
@@ -78,6 +108,7 @@ def build_tables(cfg: Config) -> dict[str, pd.DataFrame]:
     ms = pd.read_csv(out / "stage12_stress.csv")
     scen = pd.concat([scen, ms.loc[~ms["scenario"].isin(scen["scenario"]), ["scenario", "source"]].rename(columns={"source": "scenario_type"})], ignore_index=True)
     scen.insert(0, "scenario_key", range(1, len(scen) + 1))
+    scen.insert(2, "scenario_short", scen["scenario"].map(short_scenario))
     key = scen.set_index("scenario")["scenario_key"]
     stress["scenario_key"] = stress["scenario"].map(key)
     margin_stress = ms[["scenario", "ttf_move", "vm_eur", "im_after_eur", "margin_call_eur", "margin_call_pln", "credit_line_utilisation"]].copy()

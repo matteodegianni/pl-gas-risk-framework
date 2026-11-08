@@ -23,6 +23,8 @@ Checks:
    no legacy ``report.json`` sits next to the ``definition`` folder.
 6. Report content: every field a visual uses exists in the model as a column or measure; every page of the main report
    shows the synthetic-data label.
+7. Presentation (from the first review in Desktop): no table shows a total row; every card hides the category label
+   under the value; text on a horizontal bar chart axis is at most ``MAX_CATEGORY_CHARS`` characters in the data.
 """
 
 from __future__ import annotations
@@ -43,6 +45,7 @@ CACHE = PBI / ".schema_cache"
 PREFIX = "https://developer.microsoft.com/json-schemas/"
 RAW = "https://raw.githubusercontent.com/microsoft/json-schemas/main/"
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")  # PBIR object and folder names: word characters or hyphens
+MAX_CATEGORY_CHARS = 24  # longest category label that fits the stress charts without truncation
 PBIR_VERSION = "2.0.0"  # definition/version.json as written by Desktop since 2025; 1.0.0 is the 2024 preview format
 # Latest schema version per PBIR file kind published by October 2026 (Desktop 2.159, the version the project was opened
 # in), from the CHANGELOGs in microsoft/json-schemas. A newer version than Desktop knows makes the file unreadable.
@@ -163,6 +166,35 @@ def _schema_kind_errors(path: Path, kind: str, rel: str) -> list[str]:
     if _ver(m.group(2)) > _ver(SCHEMA_MAX[kind]):
         return [f"{rel}: $schema version {m.group(2)} is newer than {SCHEMA_MAX[kind]}, the latest Desktop 2.159 knows"]
     return []
+
+
+def _prop(v: dict, obj: str, name: str):
+    """Literal value of visual.objects[obj][0].properties[name], or None."""
+    try:
+        return v["visual"]["objects"][obj][0]["properties"][name]["expr"]["Literal"]["Value"]
+    except (KeyError, IndexError):
+        return None
+
+
+def presentation_errors(v: dict, tables: dict, data: dict, where: str) -> list[str]:
+    errors = []
+    vt = v["visual"]["visualType"]
+    if vt in ("tableEx", "pivotTable") and _prop(v, "total", "totals") != "false":
+        errors.append(f"{where}: table shows a total row (set total.totals to false)")
+    if vt == "card" and _prop(v, "categoryLabels", "show") != "false":
+        errors.append(f"{where}: card shows the category label under the value (clipped; the title names the figure)")
+    if vt in ("barChart", "clusteredBarChart"):  # horizontal bars truncate axis labels; column charts wrap them
+        for p in v["visual"]["query"]["queryState"].get("Category", {}).get("projections", []):
+            spec = p["field"].get("Column")
+            if not spec:
+                continue
+            t, c = spec["Expression"]["SourceRef"]["Entity"], spec["Property"]
+            if t in data and c in data[t] and not pd.api.types.is_numeric_dtype(data[t][c]):
+                longest = data[t][c].astype(str).str.len().max()
+                if longest > MAX_CATEGORY_CHARS:
+                    errors.append(f"{where}: category {t}[{c}] has labels up to {longest} characters "
+                                  f"(max {MAX_CATEGORY_CHARS}, truncated on the axis)")
+    return errors
 
 
 def report_structure_errors(rep: Path) -> list[str]:
@@ -410,6 +442,11 @@ def validate(offline: bool = False) -> list[str]:
                             has_label = True
             if not has_label:
                 errors.append(f"{rep.name} page {page}: no synthetic data label")
+
+    # 7. Presentation
+    for rep in reports:
+        for vf in sorted((rep / "definition" / "pages").glob("*/visuals/*/visual.json")):
+            errors += presentation_errors(json.loads(vf.read_text(encoding="utf-8")), tables, data, f"{rep.name}/{vf.parent.name}")
     print(f"JSON files: {len(json_files)} ({n_schema} schema-validated); tables: {len(tables)}; measures: {len(all_measures)}; "
           f"relationships: {n_rel}; reports: {len(reports)}; pages: {n_pages}; visuals: {n_vis}; visual fields: {n_fields}")
     return errors
