@@ -43,8 +43,8 @@ Polish gas supply risk framework (TGE physical, TTF hedge, EUR/PLN). Portfolio p
 
 ## Next steps
 
-1. Public GitHub repository `pl-gas-risk-framework` requested by the user (push pending GitHub sign-in;
-   `git remote` is not set).
+1. Public GitHub repository: https://github.com/matteodegianni/pl-gas-risk-framework (Phase 1 pushed; push
+   later stages after each commit with `git push`).
 2. Phase 2 (Stages 10-13): **design approved** by the user with three changes (below). Build in sequence with the
    same per-stage routine (concept first, tests, report, README, commit).
 3. Phase 3 (Stages 14-18) after Phase 2.
