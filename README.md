@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility), 5 (VaR and ES), 6 (VaR backtesting) and 7 (limits) complete.** Later stages are not built yet.
+> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility), 5 (VaR and ES), 6 (VaR backtesting), 7 (limits) and 8 (stress testing) complete.** Later stages are not built yet.
 
 ## Repository layout
 
@@ -31,6 +31,8 @@ src/gasrisk/
   backtest_report.py      generated Stage 6 report and figure
   limits.py               Stage 7: official VaR method, synthetic limits, utilisation, breach attribution
   limits_report.py        generated Stage 7 report and figure
+  stress.py               Stage 8: sensitivities, historical and hypothetical scenarios, reverse stress
+  stress_report.py        generated Stage 8 report
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -62,6 +64,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.var           # Stage 5, about 1 minute
 .venv/bin/python -m gasrisk.backtest      # Stage 6
 .venv/bin/python -m gasrisk.limits        # Stage 7
+.venv/bin/python -m gasrisk.stress        # Stage 8
 ```
 
 ```bash
@@ -145,7 +148,14 @@ Generated results: [outputs/stage7_report.md](outputs/stage7_report.md). Limits 
 - **Official VaR method** chosen by rule from Stage 6: passes conditional coverage at both levels, highest share of green traffic-light windows (GARCH-t with Gaussian copula).
 - **Limits:** 99% VaR (PLN), open gas exposure value (unhedged volume x TGE in PLN), FX net open position (EUR); amber from 80%, breach above 100%; daily utilisation and breach episodes.
 - **Breach attribution:** Euler decomposition of the official VaR by risk factor (main contributor and largest increase since 20 days before the episode); exposure breaches split exactly into TGE price and EUR/PLN contributions.
-- Key findings (from the generated report): TGE is the main contributor in all 33 VaR breach episodes and accounts for 91% of today's 99% VaR (share 0.9108); today the synthetic book uses 73% of its VaR limit and breaches both value-based exposure limits (utilisation 1.0152 and 1.1556) because TGE prices have risen.
+- Key findings (from the generated report): TGE is the main contributor in all 33 VaR breach episodes and has a 0.9108 share of today's 99% VaR; today the synthetic book's VaR limit utilisation is 0.7329 and breaches both value-based exposure limits (utilisation 1.0152 and 1.1556) because TGE prices have risen.
+
+## Stage 8 - stress testing and sensitivity
+
+Generated results: [outputs/stage8_report.md](outputs/stage8_report.md). Today's **synthetic** positions, full revaluation.
+
+- Sensitivities per +1 PLN/MWh TGE, +1 EUR/MWh TTF and +0.01 EUR/PLN, plus a grid of larger moves; worst 1/5/10/21-day joint moves in the 2021-2022 crisis and named episodes; hypothetical shocks (TTF +50% alone, gas complex +/-50%, EUR/PLN +5%, combined, basis widening); reverse stress against the VaR limit.
+- Key findings (from the generated report): P&L is -500,000 PLN per +1 PLN/MWh TGE and +1,537,375 PLN per +1 EUR/MWh TTF. The worst scenario is the worst 21-day crisis move (November 2022: TGE +355.0%, TTF +18.6%), a loss of 689,596,369 PLN or 37.64x today's 99% VaR; the TGE leg accounts for 103.3% of it because the month-ahead TTF hedge does not follow TGE day-ahead spikes. A relative TGE rise of 0.1231 alone would lose the 25,000,000 PLN VaR limit.
 
 ## Data sources and credits
 

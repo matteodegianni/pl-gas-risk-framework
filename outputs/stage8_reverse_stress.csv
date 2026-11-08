@@ -1,0 +1,3 @@
+scenario,required_move,loss_pln
+"TGE rise alone (TTF, EUR/PLN unchanged)",0.12312541554827748,25000000.0
+gas complex rise (TGE and TTF equally),0.34826739929125494,25000000.0

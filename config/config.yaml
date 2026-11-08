@@ -151,6 +151,25 @@ limits:
   amber_threshold: 0.80
   driver_lookback_days: 20
 
+stress:
+  crisis_window: ["2021-07-01", "2022-12-31"]    # worst historical joint moves searched here
+  windows_days: [1, 5, 10, 21]
+  named_episodes:                               # close-to-close on panel dates
+    - {name: "Russian invasion of Ukraine", start: "2022-02-23", end: "2022-03-07"}
+    - {name: "August 2022 price peak run-up", start: "2022-07-29", end: "2022-08-26"}
+    - {name: "Autumn 2021 squeeze", start: "2021-09-30", end: "2021-10-06"}
+  hypothetical:                                 # relative moves; basis widening is an absolute TGE move in EUR/MWh
+    - {name: "TTF +50% only (TGE unchanged)", tge: 0.0, ttf: 0.50, fx: 0.0}
+    - {name: "gas complex +50% (TGE and TTF)", tge: 0.50, ttf: 0.50, fx: 0.0}
+    - {name: "gas complex -50% (TGE and TTF)", tge: -0.50, ttf: -0.50, fx: 0.0}
+    - {name: "EUR/PLN +5%", tge: 0.0, ttf: 0.0, fx: 0.05}
+    - {name: "combined: gas complex +50% and EUR/PLN +5%", tge: 0.50, ttf: 0.50, fx: 0.05}
+  basis_widening_eur_mwh: [10, 25]              # TGE (EUR) up by this amount, TTF unchanged
+  sensitivity_grid:
+    tge_pln: [-50, -10, 10, 50]
+    ttf_eur: [-20, -5, 5, 20]
+    fx: [-0.10, -0.05, 0.05, 0.10]
+
 diagnostics:
   alpha: 0.05
   ljung_box_lags: [5, 10, 20]
