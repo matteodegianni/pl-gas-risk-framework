@@ -1,0 +1,4 @@
+position,size
+short floating TGE (open purchases),"500,000 MWh"
+long TTF futures,0.7 x open volume
+long EUR/PLN forward,"EUR notional = 0.7 x open volume x TGE in EUR, rebalanced daily"

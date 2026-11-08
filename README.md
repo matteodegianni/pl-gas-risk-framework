@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting) and 4 (volatility) complete.** Later stages are not built yet.
+> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics), 3 (forecasting), 4 (volatility) and 5 (VaR and ES) complete.** Later stages are not built yet.
 
 ## Repository layout
 
@@ -25,6 +25,8 @@ src/gasrisk/
   forecasting_report.py   generated Stage 3 report and figure
   volatility.py           Stage 4: GARCH(1,1) normal vs t, EWMA and rolling benchmarks, forecast evaluation
   volatility_report.py    generated Stage 4 report and figure
+  var.py                  Stage 5: VaR and ES of the synthetic book (six methods)
+  var_report.py           generated Stage 5 report and figure
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -53,6 +55,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.diagnostics
 .venv/bin/python -m gasrisk.forecasting   # Stage 3, about 5-10 minutes on 4 cores
 .venv/bin/python -m gasrisk.volatility    # Stage 4
+.venv/bin/python -m gasrisk.var           # Stage 5, about 1 minute
 ```
 
 ```bash
@@ -113,6 +116,14 @@ Key findings (all figures from the generated report):
 - **Student-t is selected for all four series** on both BIC and tail calibration. For the basis, skewed-t improves the left 1% tail (0.0134 against 0.0147) but worsens the right tail (0.0134 against 0.0099) and has a higher BIC (7898.8 against 7896.0), so Student-t is kept.
 - **Volatility is near-integrated** for TTF (persistence 0.9992) and the basis, which is also why EWMA, an integrated model, is hard to beat.
 - **Out of sample, EWMA is not beaten after Holm adjustment** for any series or horizon; GARCH lowers 1-day QLIKE for TGE and the basis at the raw level only (raw DM p 0.0051 to 0.0307, Holm p 0.1990 or higher).
+
+## Stage 5 - VaR and Expected Shortfall
+
+Generated results: [outputs/stage5_report.md](outputs/stage5_report.md). All positions are **synthetic**.
+
+- **Book (synthetic).** Short floating TGE purchases behind fixed-price PLN sales (500,000 MWh open), long TTF futures (0.70 x open volume, EUR), long EUR/PLN forward (EUR notional 0.70 x open volume x TGE in EUR). Risk factors: TGE in EUR, TTF (held to roll), EUR/PLN (ECB); every scenario fully revalued.
+- **Methods.** Historical simulation (500 days), multivariate normal (250 days), GARCH(1,1)-t marginals from Stage 4 with a Gaussian copula and with a Student-t copula, filtered historical simulation, and EWMA (RiskMetrics, lambda 0.94). VaR at 95% and 99%; ES at 95%, 97.5% (Basel FRTB) and 99%. Walk-forward from the same test start as Stages 3-4.
+- **Tests.** Sign conventions (TGE rise loses, TTF rise gains, EUR/PLN rise gains on the forward and raises the PLN cost of TGE), legs sum to the total, copula tail dependence, no look-ahead.
 
 ## Data sources and credits
 
