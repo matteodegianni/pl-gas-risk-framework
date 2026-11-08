@@ -15,8 +15,11 @@ GasRisk.SemanticModel/             TMDL: 17 tables, 15 relationships, 53 DAX mea
   definition/expressions.tmdl      DataFolder parameter and fnLoadCsv loader
   definition/relationships.tmdl    star schema (many-to-one, single direction)
   definition/tables/*.tmdl         one file per table: columns, measures, Power Query partition
-GasRisk.Report/                    PBIR: 4 pages, 24 visuals, custom theme
-build_pbip.py                      regenerates both folders from exports/*.csv
+GasRisk.Report/                    PBIR: 4 pages, 24 visuals, base theme plus custom theme
+GasRiskMinimal.pbip                one-page test report on the same model, to isolate report-loading problems
+GasRiskMinimal.Report/             PBIR: 1 page, 2 cards, base theme only
+resources/CY24SU06.json            Power BI base theme, copied from microsoft/semantic-link-labs (MIT, Microsoft)
+build_pbip.py                      regenerates the model and both reports from exports/*.csv
 validate_pbip.py                   validation without Power BI
 set_data_folder.py                 switches the data source between GitHub and the local clone
 ```
@@ -71,7 +74,7 @@ To refresh the data after a pipeline run: `python -m gasrisk.pipeline` rewrites 
 
 `python powerbi/validate_pbip.py` (also run by `tests/test_powerbi.py`):
 
-- All 34 JSON files (`.pbip`, `.pbir`, `.pbism`, report, pages, visuals) validate against the Microsoft schemas named
+- All 42 JSON files of both reports (`.pbip`, `.pbir`, `.pbism`, report, pages, visuals) validate against the Microsoft schemas named
   in their `$schema`, with nested references resolved (from github.com/microsoft/json-schemas, cached locally).
 - TMDL: tab indentation, a file for every table in `model.tmdl`, a partition for every table that loads an existing
   CSV, and every `sourceColumn` and type transform matching the CSV header.
@@ -81,19 +84,41 @@ To refresh the data after a pipeline run: `python -m gasrisk.pipeline` rewrites 
   `Limit Utilisation %`, and `tests/test_powerbi.py` re-inserts the old name to prove the validator rejects it.
 - DAX: every `Table[Column]` and `[Measure]` reference resolves.
 - Relationships: both columns exist, the one side is unique in the data, and every many-side key exists on it.
-- Report: page folders match `pages.json`; every field used by a visual exists as a column or measure; every page has
-  the synthetic-data label.
+- Report structure, for both reports: `activePageName` and every `pageOrder` entry in `pages.json` name an existing
+  page folder exactly (case-sensitive), with no duplicates and no folder left out; every `page.json` and `visual.json`
+  `name` equals its folder name and uses only letters, digits, `_` or `-`; `definition.pbir` is version 4.0 and its
+  `byPath` model exists; `version.json` is `2.0.0`; each `$schema` names the right file kind at a version published by
+  October 2026 (Desktop 2.159); `report.json` has a base theme and every resource-package file exists; no legacy
+  `report.json` sits next to `definition/`.
+- Report content: every field used by a visual exists as a column or measure; every page has the synthetic-data label.
 - The validator was tested by injecting errors (unknown column, unknown measure, invalid page property, extra visual
-  property, broken relationship, a measure named like a column, a duplicate measure name); it reported all of them.
+  property, broken relationship, a measure named like a column, a duplicate measure name, and 13 broken report
+  structures in `tests/test_powerbi.py`); it reported all of them.
+
+### Page-activation failure in Desktop 2.159 (fixed)
+
+The first version loaded the model and data but Desktop failed when it opened a page: "Cannot read properties of
+undefined (reading 'visualContainers')". Pages, folders and names were already consistent. The report differed from
+every Desktop-saved PBIR we compared it with (Microsoft's semantic-link-labs template and public PBIP samples) in two
+ways: `definition/version.json` said `1.0.0`, the 2024 preview format, where Desktop writes `2.0.0`; and `report.json`
+had only a custom theme, with no `baseTheme` from `SharedResources`. Both are fixed, and the validator now rejects
+both; run against the failing commit it reports exactly these two errors. This cause is inferred from the comparison,
+not confirmed in Desktop, so `GasRiskMinimal.pbip` is there to isolate it (see the checklist).
 
 It cannot check DAX semantics, Power Query evaluation, or how the visuals render.
 
 ## What to check on first open
 
-1. **The project opens** without a "cannot load" error. A first attempt failed on a measure named like a column
-   (`Utilisation`); that is fixed and now checked. If Desktop reports another model error, add the rule to
-   `validate_pbip.py` before fixing it, so it cannot come back. If the report fails on the theme, delete `themeCollection` and
-   `resourcePackages` from `GasRisk.Report/definition/report.json` (Desktop then uses its default theme).
+1. **The project opens** without a "cannot load" error and shows the Risk overview page. If a page still fails to
+   render, close Desktop and open `GasRiskMinimal.pbip` (one page, two cards, base theme only, same model):
+   - minimal opens, full fails: the cause is in the full report's pages, visuals or custom theme; remove
+     `customTheme` and its resource package from `GasRisk.Report/definition/report.json` first;
+   - both fail: the cause is shared report metadata (`version.json`, `report.json`, `definition.pbir`); save the
+     minimal report from Desktop and compare the files Desktop rewrote.
+
+   Open one `.pbip` at a time, since both point at the same semantic model folder. Earlier attempts failed on a
+   measure named like a column (`Utilisation`) and on page activation (above); both are fixed and now checked. If
+   Desktop reports another error, add the rule to `validate_pbip.py` before fixing it, so it cannot come back.
 2. **Refresh succeeds** for all 17 tables (Home > Refresh). If types fail on a non-English locale, check that each
    partition's `Table.TransformColumnTypes` keeps the `"en-US"` culture argument.
 3. **Model view** shows 15 relationships, all many-to-one from facts to dimensions, single direction, with no

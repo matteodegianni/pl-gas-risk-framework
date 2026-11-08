@@ -369,34 +369,64 @@ PAGES = [
 ]
 
 
-def report() -> dict[str, str]:
+# Desktop-saved PBIR (2025-2026) always has version.json 2.0.0 and a base theme from SharedResources; version 1.0.0 is
+# the June 2024 preview format. The first version of this project wrote 1.0.0 with no base theme, and Desktop 2.159
+# loaded the model but failed on page activation ("Cannot read properties of undefined (reading 'visualContainers')").
+PBIR_VERSION = "2.0.0"
+BASE_THEME = ("CY24SU06", "5.56")  # file vendored from microsoft/semantic-link-labs (MIT), see powerbi/README.md
+MINIMAL_NAME = f"{NAME}Minimal"
+MINIMAL_PAGES = [
+    ("minimal_test", "Minimal test", lambda p: [
+        label_card(p, 0),
+        visual(f"{p}_var_card", "card", 20, 10, 270, 110, {"Values": [mea("FactVaR", "Latest Official VaR 99")]},
+               "Official 99% VaR today (PLN)", 1),
+    ]),
+]
+
+
+def report(pages: list = PAGES, custom_theme: bool = True) -> dict[str, str]:
+    """PBIR files of a report on the shared semantic model; ``custom_theme=False`` keeps only the base theme."""
     files = {}
     files["definition.pbir"] = json.dumps({"$schema": f"{SCHEMA}/item/report/definitionProperties/2.0.0/schema.json",
                                            "version": "4.0", "datasetReference": {"byPath": {"path": f"../{NAME}.SemanticModel"}}},
                                           indent=2) + "\n"
     files["definition/version.json"] = json.dumps({"$schema": f"{SCHEMA}/item/report/definition/versionMetadata/1.0.0/schema.json",
-                                                   "version": "1.0.0"}, indent=2) + "\n"
+                                                   "version": PBIR_VERSION}, indent=2) + "\n"
+    base, base_ver = BASE_THEME
+    themes = {"baseTheme": {"name": base, "reportVersionAtImport": base_ver, "type": "SharedResources"}}
+    packages = [{"name": "SharedResources", "type": "SharedResources",
+                 "items": [{"name": base, "path": f"BaseThemes/{base}.json", "type": "BaseTheme"}]}]
+    files[f"StaticResources/SharedResources/BaseThemes/{base}.json"] = (PBI / "resources" / f"{base}.json").read_text(encoding="utf-8")
+    if custom_theme:
+        themes["customTheme"] = {"name": "GasRiskTheme.json", "reportVersionAtImport": base_ver, "type": "RegisteredResources"}
+        packages.append({"name": "RegisteredResources", "type": "RegisteredResources",
+                         "items": [{"name": "GasRiskTheme.json", "path": "GasRiskTheme.json", "type": "CustomTheme"}]})
+        files["StaticResources/RegisteredResources/GasRiskTheme.json"] = json.dumps({
+            "name": "GasRiskTheme",
+            "dataColors": ["#1F4E79", "#C55A11", "#548235", "#7F6000", "#7030A0", "#2E75B6", "#BF9000", "#A5A5A5"],
+            "background": "#FFFFFF", "foreground": "#252423", "tableAccent": "#1F4E79",
+        }, indent=2) + "\n"
     files["definition/report.json"] = json.dumps({
         "$schema": f"{SCHEMA}/item/report/definition/report/1.0.0/schema.json",
-        "themeCollection": {"customTheme": {"name": "GasRiskTheme.json", "reportVersionAtImport": "5.55", "type": "RegisteredResources"}},
+        "themeCollection": themes,
         "layoutOptimization": "None",
-        "resourcePackages": [{"name": "RegisteredResources", "type": "RegisteredResources",
-                              "items": [{"name": "GasRiskTheme.json", "path": "GasRiskTheme.json", "type": "CustomTheme"}]}],
-    }, indent=2) + "\n"
-    files["StaticResources/RegisteredResources/GasRiskTheme.json"] = json.dumps({
-        "name": "GasRiskTheme",
-        "dataColors": ["#1F4E79", "#C55A11", "#548235", "#7F6000", "#7030A0", "#2E75B6", "#BF9000", "#A5A5A5"],
-        "background": "#FFFFFF", "foreground": "#252423", "tableAccent": "#1F4E79",
+        "resourcePackages": packages,
     }, indent=2) + "\n"
     files["definition/pages/pages.json"] = json.dumps({"$schema": f"{SCHEMA}/item/report/definition/pagesMetadata/1.0.0/schema.json",
-                                                       "pageOrder": [p[0] for p in PAGES], "activePageName": PAGES[0][0]}, indent=2) + "\n"
-    for pname, display, build in PAGES:
+                                                       "pageOrder": [p[0] for p in pages], "activePageName": pages[0][0]}, indent=2) + "\n"
+    for pname, display, build in pages:
         files[f"definition/pages/{pname}/page.json"] = json.dumps({
             "$schema": f"{SCHEMA}/item/report/definition/page/1.0.0/schema.json",
             "name": pname, "displayName": display, "displayOption": "FitToPage", "height": 720, "width": 1280}, indent=2) + "\n"
         for v in build(pname):
             files[f"definition/pages/{pname}/visuals/{v['name']}/visual.json"] = json.dumps(v, indent=2) + "\n"
     return files
+
+
+def pbip(report_name: str) -> str:
+    return json.dumps({"$schema": f"{SCHEMA}/pbip/pbipProperties/1.0.0/schema.json", "version": "1.0",
+                       "artifacts": [{"report": {"path": f"{report_name}.Report"}}],
+                       "settings": {"enableAutoRecovery": True}}, indent=2) + "\n"
 
 
 def write(base: Path, files: dict[str, str]) -> None:
@@ -412,12 +442,12 @@ def main() -> None:
     frames = {t: pd.read_csv(EXPORTS / f"{f}.csv") for t, f in TABLES.items()}
     write(PBI / f"{NAME}.SemanticModel", semantic_model(frames))
     write(PBI / f"{NAME}.Report", report())
-    (PBI / f"{NAME}.pbip").write_text(json.dumps({
-        "$schema": f"{SCHEMA}/pbip/pbipProperties/1.0.0/schema.json", "version": "1.0",
-        "artifacts": [{"report": {"path": f"{NAME}.Report"}}], "settings": {"enableAutoRecovery": True}}, indent=2) + "\n", encoding="utf-8")
+    (PBI / f"{NAME}.pbip").write_text(pbip(NAME), encoding="utf-8")
+    write(PBI / f"{MINIMAL_NAME}.Report", report(MINIMAL_PAGES, custom_theme=False))
+    (PBI / f"{MINIMAL_NAME}.pbip").write_text(pbip(MINIMAL_NAME), encoding="utf-8")
     (PBI / ".gitignore").write_text("**/.pbi/localSettings.json\n**/.pbi/cache.abf\n.schema_cache/\n", encoding="utf-8")
     n_meas = sum(len(v) for v in MEASURES.values())
-    print(f"{len(TABLES)} tables, {len(RELATIONSHIPS)} relationships, {n_meas} measures, {len(PAGES)} pages")
+    print(f"{len(TABLES)} tables, {len(RELATIONSHIPS)} relationships, {n_meas} measures, {len(PAGES)} pages; minimal test report: {len(MINIMAL_PAGES)} page")
 
 
 if __name__ == "__main__":

@@ -14,8 +14,15 @@ Checks:
 3. Names and DAX: measure names are unique across the model and match no column name in any table (case-insensitive,
    as in Power BI); every ``Table[Column]`` and ``[Measure]`` reference exists.
 4. Relationships: both columns exist, the one side is unique in the CSV data and every many-side key exists on it.
-5. Report: page folders match ``pages.json``; every field a visual uses exists in the model as a column or measure;
-   every page shows the synthetic-data label.
+5. Report structure, for every report a ``.pbip`` opens (rules added after Desktop 2.159 failed on page activation):
+   ``pages.json`` ``activePageName`` and every ``pageOrder`` entry name an existing page folder exactly, with no
+   duplicates and no folder left out; every ``page.json`` and ``visual.json`` ``name`` equals its folder name and uses
+   only word characters or hyphens; ``definition.pbir`` is version 4.0 with a ``byPath`` model that exists;
+   ``version.json`` is the PBIR version Desktop writes (2.0.0); each ``$schema`` names the right file kind at a version
+   published by October 2026 (Desktop 2.159); ``report.json`` has a base theme and every resource-package file exists;
+   no legacy ``report.json`` sits next to the ``definition`` folder.
+6. Report content: every field a visual uses exists in the model as a column or measure; every page of the main report
+   shows the synthetic-data label.
 """
 
 from __future__ import annotations
@@ -35,6 +42,20 @@ NAME = "GasRisk"
 CACHE = PBI / ".schema_cache"
 PREFIX = "https://developer.microsoft.com/json-schemas/"
 RAW = "https://raw.githubusercontent.com/microsoft/json-schemas/main/"
+NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")  # PBIR object and folder names: word characters or hyphens
+PBIR_VERSION = "2.0.0"  # definition/version.json as written by Desktop since 2025; 1.0.0 is the 2024 preview format
+# Latest schema version per PBIR file kind published by October 2026 (Desktop 2.159, the version the project was opened
+# in), from the CHANGELOGs in microsoft/json-schemas. A newer version than Desktop knows makes the file unreadable.
+SCHEMA_MAX = {
+    "pbip/pbipProperties": "1.0.0",
+    "item/report/definitionProperties": "2.0.0",
+    "item/semanticModel/definitionProperties": "1.0.0",
+    "item/report/definition/versionMetadata": "1.0.0",
+    "item/report/definition/report": "3.3.0",
+    "item/report/definition/pagesMetadata": "1.1.0",
+    "item/report/definition/page": "2.1.0",
+    "item/report/definition/visualContainer": "2.13.0",
+}
 
 
 # --------------------------------------------------------------------------- TMDL parsing
@@ -124,14 +145,140 @@ def schema_errors(doc: dict) -> list[str]:
 # --------------------------------------------------------------------------- checks
 
 
+def _ver(v: str) -> tuple[int, ...]:
+    return tuple(int(x) for x in v.split("."))
+
+
+def _schema_kind_errors(path: Path, kind: str, rel: str) -> list[str]:
+    """The file's $schema must be the expected kind at a version Desktop 2.159 knows."""
+    try:
+        doc = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - reported by the JSON check
+        return []
+    m = re.fullmatch(re.escape(PREFIX) + r"fabric/(.+)/(\d+\.\d+\.\d+)/schema\.json", str(doc.get("$schema", "")))
+    if not m:
+        return [f"{rel}: $schema {doc.get('$schema')!r} is not a Fabric schema URL"]
+    if m.group(1) != kind:
+        return [f"{rel}: $schema is {m.group(1)}, expected {kind}"]
+    if _ver(m.group(2)) > _ver(SCHEMA_MAX[kind]):
+        return [f"{rel}: $schema version {m.group(2)} is newer than {SCHEMA_MAX[kind]}, the latest Desktop 2.159 knows"]
+    return []
+
+
+def report_structure_errors(rep: Path) -> list[str]:
+    """PBIR structure rules that decide whether Desktop can find and open the pages of a report folder."""
+    errors: list[str] = []
+    r = rep.name
+    d = rep / "definition"
+    if (rep / "report.json").exists():
+        errors.append(f"{r}: legacy report.json next to the PBIR definition folder (Desktop reads one format, not both)")
+    if not d.is_dir():
+        return errors + [f"{r}: no definition/ folder (PBIR)"]
+
+    # definition.pbir, version.json and schema versions
+    pbir = rep / "definition.pbir"
+    if not pbir.exists():
+        errors.append(f"{r}: definition.pbir missing")
+    else:
+        doc = json.loads(pbir.read_text(encoding="utf-8"))
+        errors += _schema_kind_errors(pbir, "item/report/definitionProperties", f"{r}/definition.pbir")
+        if _ver(str(doc.get("version", "0"))) < (4, 0):
+            errors.append(f"{r}/definition.pbir: version {doc.get('version')} (PBIR needs 4.0)")
+        target = doc.get("datasetReference", {}).get("byPath", {}) or {}
+        if not target.get("path") or not (rep / target["path"] / "definition.pbism").exists():
+            errors.append(f"{r}/definition.pbir: byPath semantic model {target.get('path')!r} not found")
+    vf = d / "version.json"
+    if not vf.exists():
+        errors.append(f"{r}: definition/version.json missing")
+    else:
+        errors += _schema_kind_errors(vf, "item/report/definition/versionMetadata", f"{r}/version.json")
+        v = json.loads(vf.read_text(encoding="utf-8")).get("version")
+        if v != PBIR_VERSION:
+            errors.append(f"{r}/version.json: version {v}, Desktop writes and expects {PBIR_VERSION}")
+
+    # report.json: base theme and resource files
+    rj = d / "report.json"
+    if not rj.exists():
+        errors.append(f"{r}: definition/report.json missing")
+    else:
+        errors += _schema_kind_errors(rj, "item/report/definition/report", f"{r}/report.json")
+        doc = json.loads(rj.read_text(encoding="utf-8"))
+        themes = doc.get("themeCollection", {})
+        if "baseTheme" not in themes:
+            errors.append(f"{r}/report.json: themeCollection has no baseTheme")
+        items = {}
+        for pkg in doc.get("resourcePackages", []):
+            for it in pkg.get("items", []):
+                items[it["name"]] = it
+                if not (rep / "StaticResources" / pkg["name"] / it["path"]).exists():
+                    errors.append(f"{r}/report.json: resource {pkg['name']}/{it['path']} not found under StaticResources")
+        for kind, t in themes.items():
+            if t.get("name") not in items:
+                errors.append(f"{r}/report.json: {kind} {t.get('name')!r} is not in resourcePackages")
+
+    # pages.json against page folders
+    pd_ = d / "pages"
+    folders = sorted(p.name for p in pd_.iterdir() if p.is_dir()) if pd_.is_dir() else []
+    if not folders:
+        return errors + [f"{r}: no page folders"]
+    pj = pd_ / "pages.json"
+    if not pj.exists():
+        errors.append(f"{r}: pages/pages.json missing")
+    else:
+        errors += _schema_kind_errors(pj, "item/report/definition/pagesMetadata", f"{r}/pages.json")
+        meta = json.loads(pj.read_text(encoding="utf-8"))
+        order = meta.get("pageOrder", [])
+        if len(order) != len(set(order)):
+            errors.append(f"{r}/pages.json: duplicate entries in pageOrder {order}")
+        for name in order:
+            if name not in folders:
+                errors.append(f"{r}/pages.json: pageOrder entry {name!r} matches no page folder {folders}")
+        for name in folders:
+            if name not in order:
+                errors.append(f"{r}/pages.json: page folder {name!r} missing from pageOrder")
+        active = meta.get("activePageName")
+        if active not in folders:
+            errors.append(f"{r}/pages.json: activePageName {active!r} matches no page folder {folders}")
+
+    # page and visual names
+    for page in folders:
+        if not NAME_RE.match(page):
+            errors.append(f"{r}: page folder {page!r} has characters other than letters, digits, _ or -")
+        pf = pd_ / page / "page.json"
+        if not pf.exists():
+            errors.append(f"{r}/{page}: page.json missing")
+            continue
+        errors += _schema_kind_errors(pf, "item/report/definition/page", f"{r}/{page}/page.json")
+        pname = json.loads(pf.read_text(encoding="utf-8")).get("name")
+        if pname != page:
+            errors.append(f"{r}/{page}/page.json: name {pname!r} differs from its folder name")
+        vdir = pd_ / page / "visuals"
+        for vd in sorted(x for x in vdir.iterdir() if x.is_dir()) if vdir.is_dir() else []:
+            vj = vd / "visual.json"
+            if not NAME_RE.match(vd.name):
+                errors.append(f"{r}/{page}: visual folder {vd.name!r} has characters other than letters, digits, _ or -")
+            if not vj.exists():
+                errors.append(f"{r}/{page}/{vd.name}: visual.json missing")
+                continue
+            errors += _schema_kind_errors(vj, "item/report/definition/visualContainer", f"{r}/{page}/{vd.name}/visual.json")
+            vname = json.loads(vj.read_text(encoding="utf-8")).get("name")
+            if vname != vd.name:
+                errors.append(f"{r}/{page}/{vd.name}/visual.json: name {vname!r} differs from its folder name")
+    return errors
+
+
 def validate(offline: bool = False) -> list[str]:
     errors: list[str] = []
     sm = PBI / f"{NAME}.SemanticModel" / "definition"
-    rep = PBI / f"{NAME}.Report"
+    reports = []
+    for pb in sorted(PBI.glob("*.pbip")):
+        for a in json.loads(pb.read_text(encoding="utf-8")).get("artifacts", []):
+            reports.append(PBI / a["report"]["path"])
 
     # 1. JSON
-    json_files = [PBI / f"{NAME}.pbip", rep / "definition.pbir", PBI / f"{NAME}.SemanticModel" / "definition.pbism",
-                  *sorted((rep / "definition").rglob("*.json"))]
+    json_files = [*sorted(PBI.glob("*.pbip")), PBI / f"{NAME}.SemanticModel" / "definition.pbism"]
+    for rep in reports:
+        json_files += [rep / "definition.pbir", *sorted((rep / "definition").rglob("*.json"))]
     n_schema = 0
     for f in json_files:
         try:
@@ -235,34 +382,36 @@ def validate(offline: bool = False) -> list[str]:
         if missing:
             errors.append(f"relationship {frm} -> {to}: {len(missing)} keys missing on the one side")
 
-    # 5. Report
-    pages_meta = json.loads((rep / "definition" / "pages" / "pages.json").read_text(encoding="utf-8"))
-    folders = sorted(p.name for p in (rep / "definition" / "pages").iterdir() if p.is_dir())
-    if sorted(pages_meta["pageOrder"]) != folders:
-        errors.append(f"pages.json order {pages_meta['pageOrder']} does not match folders {folders}")
-    n_vis, n_fields = 0, 0
-    for page in folders:
-        has_label = False
-        for vf in (rep / "definition" / "pages" / page / "visuals").glob("*/visual.json"):
-            n_vis += 1
-            v = json.loads(vf.read_text(encoding="utf-8"))
-            if v["name"] != vf.parent.name:
-                errors.append(f"{page}/{vf.parent.name}: name differs from folder")
-            for role in v["visual"]["query"]["queryState"].values():
-                for p in role["projections"]:
-                    kind, spec = next(iter(p["field"].items()))
-                    ent, prop = spec["Expression"]["SourceRef"]["Entity"], spec["Property"]
-                    n_fields += 1
-                    if kind == "Column" and (ent not in tables or prop not in tables[ent]["columns"]):
-                        errors.append(f"{page}/{v['name']}: unknown column {ent}[{prop}]")
-                    if kind == "Measure" and (ent not in tables or prop not in tables[ent]["measures"]):
-                        errors.append(f"{page}/{v['name']}: unknown measure {ent}[{prop}]")
-                    if kind == "Measure" and prop == "Data Label":
-                        has_label = True
-        if not has_label:
-            errors.append(f"page {page}: no synthetic data label")
+    # 5. Report structure
+    for rep in reports:
+        errors += report_structure_errors(rep)
+
+    # 6. Report content
+    n_vis, n_fields, n_pages = 0, 0, 0
+    for rep in reports:
+        pages_dir = rep / "definition" / "pages"
+        folders = sorted(p.name for p in pages_dir.iterdir() if p.is_dir()) if pages_dir.is_dir() else []
+        n_pages += len(folders)
+        for page in folders:
+            has_label = False
+            for vf in (pages_dir / page / "visuals").glob("*/visual.json"):
+                n_vis += 1
+                v = json.loads(vf.read_text(encoding="utf-8"))
+                for role in v["visual"]["query"]["queryState"].values():
+                    for p in role["projections"]:
+                        kind, spec = next(iter(p["field"].items()))
+                        ent, prop = spec["Expression"]["SourceRef"]["Entity"], spec["Property"]
+                        n_fields += 1
+                        if kind == "Column" and (ent not in tables or prop not in tables[ent]["columns"]):
+                            errors.append(f"{rep.name}/{page}/{v['name']}: unknown column {ent}[{prop}]")
+                        if kind == "Measure" and (ent not in tables or prop not in tables[ent]["measures"]):
+                            errors.append(f"{rep.name}/{page}/{v['name']}: unknown measure {ent}[{prop}]")
+                        if kind == "Measure" and prop == "Data Label":
+                            has_label = True
+            if not has_label:
+                errors.append(f"{rep.name} page {page}: no synthetic data label")
     print(f"JSON files: {len(json_files)} ({n_schema} schema-validated); tables: {len(tables)}; measures: {len(all_measures)}; "
-          f"relationships: {n_rel}; pages: {len(folders)}; visuals: {n_vis}; visual fields: {n_fields}")
+          f"relationships: {n_rel}; reports: {len(reports)}; pages: {n_pages}; visuals: {n_vis}; visual fields: {n_fields}")
     return errors
 
 
