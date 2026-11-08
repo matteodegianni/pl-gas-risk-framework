@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "stress_margin_buffer_card",
   "position": {
-    "x": 970,
-    "y": 430,
-    "z": 4,
-    "width": 290,
-    "height": 100,
-    "tabOrder": 4
+    "x": 863,
+    "y": 720,
+    "z": 6,
+    "width": 195,
+    "height": 90,
+    "tabOrder": 6
   },
   "visual": {
     "visualType": "card",
@@ -47,7 +47,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'10-day 99% liquidity buffer (EUR)'"
+                  "Value": "'10-day buffer (EUR)'"
                 }
               }
             }

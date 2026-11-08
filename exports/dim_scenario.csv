@@ -17,4 +17,4 @@ scenario_key,scenario,scenario_short,scenario_type,data_label
 16,worst 5-day TTF fall in crisis,TTF fall worst 5d,margin-specific historical,synthetic book on real market data
 17,worst 10-day TTF fall in crisis,TTF fall worst 10d,margin-specific historical,synthetic book on real market data
 18,worst 21-day TTF fall in crisis,TTF fall worst 21d,margin-specific historical,synthetic book on real market data
-19,"volatility stress: crisis 99th percentile volatility, price unchanged",Vol stress (crisis p99),margin-specific,synthetic book on real market data
+19,"volatility stress: crisis 99th percentile volatility, price unchanged",Vol stress p99,margin-specific,synthetic book on real market data

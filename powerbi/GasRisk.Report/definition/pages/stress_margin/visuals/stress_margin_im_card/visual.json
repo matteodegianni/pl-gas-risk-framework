@@ -3,11 +3,11 @@
   "name": "stress_margin_im_card",
   "position": {
     "x": 660,
-    "y": 430,
-    "z": 3,
-    "width": 290,
-    "height": 100,
-    "tabOrder": 3
+    "y": 720,
+    "z": 5,
+    "width": 195,
+    "height": 90,
+    "tabOrder": 5
   },
   "visual": {
     "visualType": "card",
@@ -47,7 +47,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Initial margin today (EUR)'"
+                  "Value": "'Initial margin (EUR)'"
                 }
               }
             }

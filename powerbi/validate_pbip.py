@@ -23,8 +23,11 @@ Checks:
    no legacy ``report.json`` sits next to the ``definition`` folder.
 6. Report content: every field a visual uses exists in the model as a column or measure; every page of the main report
    shows the synthetic-data label.
-7. Presentation (from the first review in Desktop): no table shows a total row; every card hides the category label
-   under the value; text on a horizontal bar chart axis is at most ``MAX_CATEGORY_CHARS`` characters in the data.
+7. Presentation (from the reviews in Desktop): no table shows a total row; every card hides the category label under
+   the value; every visual lies inside its page; on a horizontal bar chart the longest category label fits the label
+   area (a quarter of the width at ``CHAR_PX`` per character) and the chart is tall enough for every category with
+   data (``ROW_PX`` per category plus title, axis and legend), so nothing scrolls; a column chart is wide enough for
+   its categories in the same way; no chart shows a raw column name as an axis or legend title.
 """
 
 from __future__ import annotations
@@ -45,7 +48,14 @@ CACHE = PBI / ".schema_cache"
 PREFIX = "https://developer.microsoft.com/json-schemas/"
 RAW = "https://raw.githubusercontent.com/microsoft/json-schemas/main/"
 NAME_RE = re.compile(r"^[A-Za-z0-9_-]+$")  # PBIR object and folder names: word characters or hyphens
-MAX_CATEGORY_CHARS = 24  # longest category label that fits the stress charts without truncation
+# Calibrated on the PDF exported from Desktop 2.159: a 400 px bar chart cut "99% VaR (official)" after 14 characters
+# while a 560 px one showed "FX on hedge translation" (23) in full, i.e. about 6 px per character in a label area of a
+# quarter of the width; bar rows were about 22 px, and title, axis and legend took about 80 px (+25 px with a legend).
+CHAR_PX = 6.0
+LABEL_SHARE = 0.25
+ROW_PX = 24
+CHART_OVERHEAD_PX = 80
+LEGEND_PX = 25
 PBIR_VERSION = "2.0.0"  # definition/version.json as written by Desktop since 2025; 1.0.0 is the 2024 preview format
 # Latest schema version per PBIR file kind published by October 2026 (Desktop 2.159, the version the project was opened
 # in), from the CHANGELOGs in microsoft/json-schemas. A newer version than Desktop knows makes the file unreadable.
@@ -176,24 +186,59 @@ def _prop(v: dict, obj: str, name: str):
         return None
 
 
-def presentation_errors(v: dict, tables: dict, data: dict, where: str) -> list[str]:
+def category_count(data: dict, rels: list, table: str, column: str, fact: str) -> int:
+    """Number of category values a measure from ``fact`` shows: only those with fact rows, through the relationship."""
+    if fact == table:
+        return int(data[table][column].nunique())
+    for ft, fc, tt, tc in rels:
+        if ft == fact and tt == table and fact in data:
+            keys = set(data[fact][fc].dropna())
+            return int(data[table].loc[data[table][tc].isin(keys), column].nunique())
+    return int(data[table][column].nunique())
+
+
+def presentation_errors(v: dict, tables: dict, data: dict, where: str, rels: list | None = None,
+                        page: tuple[int, int] | None = None) -> list[str]:
     errors = []
     vt = v["visual"]["visualType"]
     if vt in ("tableEx", "pivotTable") and _prop(v, "total", "totals") != "false":
         errors.append(f"{where}: table shows a total row (set total.totals to false)")
     if vt == "card" and _prop(v, "categoryLabels", "show") != "false":
         errors.append(f"{where}: card shows the category label under the value (clipped; the title names the figure)")
-    if vt in ("barChart", "clusteredBarChart"):  # horizontal bars truncate axis labels; column charts wrap them
-        for p in v["visual"]["query"]["queryState"].get("Category", {}).get("projections", []):
-            spec = p["field"].get("Column")
-            if not spec:
-                continue
+    if vt in ("barChart", "clusteredBarChart", "columnChart", "clusteredColumnChart", "lineChart"):
+        qs0 = v["visual"]["query"]["queryState"]
+        for role in ("Category", "Series"):
+            for p in qs0.get(role, {}).get("projections", []):
+                titled = role == "Category" and _prop(v, "categoryAxis", "titleText") is not None
+                if "Column" in p["field"] and not p.get("displayName") and not titled:
+                    errors.append(f"{where}: {role.lower()} field {p['field']['Column']['Property']} has no display name, "
+                                  f"so the chart shows the raw column name as its axis or legend title")
+    pos = v["position"]
+    if page and (pos["x"] + pos["width"] > page[0] or pos["y"] + pos["height"] > page[1]):
+        errors.append(f"{where}: visual extends beyond the {page[0]} x {page[1]} page")
+    horizontal = vt in ("barChart", "clusteredBarChart")
+    if horizontal or vt in ("columnChart", "clusteredColumnChart"):
+        qs = v["visual"]["query"]["queryState"]
+        cats = [p["field"]["Column"] for p in qs.get("Category", {}).get("projections", []) if "Column" in p["field"]]
+        facts = [p["field"]["Measure"]["Expression"]["SourceRef"]["Entity"] for p in qs.get("Y", {}).get("projections", [])
+                 if "Measure" in p["field"]]
+        for spec in cats:
             t, c = spec["Expression"]["SourceRef"]["Entity"], spec["Property"]
-            if t in data and c in data[t] and not pd.api.types.is_numeric_dtype(data[t][c]):
-                longest = data[t][c].astype(str).str.len().max()
-                if longest > MAX_CATEGORY_CHARS:
-                    errors.append(f"{where}: category {t}[{c}] has labels up to {longest} characters "
-                                  f"(max {MAX_CATEGORY_CHARS}, truncated on the axis)")
+            if t not in data or c not in data[t]:
+                continue
+            n = max([category_count(data, rels or [], t, c, f) for f in facts] or [data[t][c].nunique()])
+            legend = LEGEND_PX if qs.get("Series") else 0
+            size, dim = (pos["height"], "height") if horizontal else (pos["width"], "width")
+            need = CHART_OVERHEAD_PX + legend + n * ROW_PX
+            if size < need:
+                errors.append(f"{where}: {n} categories of {t}[{c}] need {need} px of {dim}, the visual has {size} "
+                              f"(the chart would scroll and hide categories)")
+            if horizontal and not pd.api.types.is_numeric_dtype(data[t][c]):
+                longest = int(data[t][c].astype(str).str.len().max())
+                fits = int(pos["width"] * LABEL_SHARE / CHAR_PX)
+                if longest > fits:
+                    errors.append(f"{where}: category {t}[{c}] has labels up to {longest} characters, "
+                                  f"a {pos['width']} px bar chart shows about {fits} before truncating")
     return errors
 
 
@@ -399,11 +444,13 @@ def validate(offline: bool = False) -> list[str]:
 
     # 4. Relationships
     rel = (sm / "relationships.tmdl").read_text(encoding="utf-8")
+    rels: list[tuple[str, str, str, str]] = []
     n_rel = 0
     for frm, to in re.findall(r"fromColumn: (\S+)\n\ttoColumn: (\S+)", rel):
         n_rel += 1
         (ft, fc), (tt, tc) = frm.split(".", 1), to.split(".", 1)
         fc, tc = fc.strip("'"), tc.strip("'")
+        rels.append((ft, fc, tt, tc))
         if ft not in tables or fc not in tables[ft]["columns"] or tt not in tables or tc not in tables[tt]["columns"]:
             errors.append(f"relationship {frm} -> {to}: unknown column")
             continue
@@ -446,7 +493,9 @@ def validate(offline: bool = False) -> list[str]:
     # 7. Presentation
     for rep in reports:
         for vf in sorted((rep / "definition" / "pages").glob("*/visuals/*/visual.json")):
-            errors += presentation_errors(json.loads(vf.read_text(encoding="utf-8")), tables, data, f"{rep.name}/{vf.parent.name}")
+            pg = json.loads((vf.parents[2] / "page.json").read_text(encoding="utf-8"))
+            errors += presentation_errors(json.loads(vf.read_text(encoding="utf-8")), tables, data, f"{rep.name}/{vf.parent.name}",
+                                          rels=rels, page=(pg["width"], pg["height"]))
     print(f"JSON files: {len(json_files)} ({n_schema} schema-validated); tables: {len(tables)}; measures: {len(all_measures)}; "
           f"relationships: {n_rel}; reports: {len(reports)}; pages: {n_pages}; visuals: {n_vis}; visual fields: {n_fields}")
     return errors

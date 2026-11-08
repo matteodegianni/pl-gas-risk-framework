@@ -5,7 +5,7 @@
     "x": 20,
     "y": 470,
     "z": 6,
-    "width": 820,
+    "width": 740,
     "height": 240,
     "tabOrder": 6
   },
@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "DimDate.date",
-              "nativeQueryRef": "date"
+              "nativeQueryRef": "date",
+              "displayName": "Date"
             }
           ]
         },
@@ -60,11 +61,12 @@
                       "Entity": "DimLimit"
                     }
                   },
-                  "Property": "limit_name"
+                  "Property": "limit_short"
                 }
               },
-              "queryRef": "DimLimit.limit_name",
-              "nativeQueryRef": "limit_name"
+              "queryRef": "DimLimit.limit_short",
+              "nativeQueryRef": "limit_short",
+              "displayName": "Limit"
             }
           ]
         }
@@ -108,6 +110,26 @@
               "expr": {
                 "Literal": {
                   "Value": "'Share of limit'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Date'"
                 }
               }
             }

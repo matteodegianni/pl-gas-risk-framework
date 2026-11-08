@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "risk_overview_breach_table",
   "position": {
-    "x": 860,
+    "x": 780,
     "y": 470,
     "z": 7,
-    "width": 400,
+    "width": 480,
     "height": 240,
     "tabOrder": 7
   },
@@ -23,11 +23,11 @@
                       "Entity": "DimLimit"
                     }
                   },
-                  "Property": "limit_name"
+                  "Property": "limit_short"
                 }
               },
-              "queryRef": "DimLimit.limit_name",
-              "nativeQueryRef": "limit_name",
+              "queryRef": "DimLimit.limit_short",
+              "nativeQueryRef": "limit_short",
               "displayName": "Limit"
             },
             {

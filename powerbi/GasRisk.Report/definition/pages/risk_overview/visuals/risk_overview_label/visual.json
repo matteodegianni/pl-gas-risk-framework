@@ -6,7 +6,7 @@
     "y": 10,
     "z": 0,
     "width": 360,
-    "height": 70,
+    "height": 60,
     "tabOrder": 0
   },
   "visual": {
@@ -40,14 +40,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "text": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Data'"
+                  "Value": "false"
                 }
               }
             }

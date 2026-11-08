@@ -17,6 +17,14 @@ table DimLimit
 
 		annotation SummarizationSetBy = Automatic
 
+	column limit_short
+		dataType: string
+		lineageTag: c1cb36f3-91fc-5124-b7b5-cd9850cdc5fd
+		summarizeBy: none
+		sourceColumn: limit_short
+
+		annotation SummarizationSetBy = Automatic
+
 	column limit_value
 		dataType: double
 		lineageTag: e667fa1e-326a-5943-9c70-0fe64bbbea0a
@@ -54,7 +62,7 @@ table DimLimit
 		source =
 				let
 				    Source = fnLoadCsv("dim_limit"),
-				    Typed = Table.TransformColumnTypes(Source, {{"limit_key", type text}, {"limit_name", type text}, {"limit_value", type number}, {"unit", type text}, {"amber_threshold", type number}, {"data_label", type text}}, "en-US")
+				    Typed = Table.TransformColumnTypes(Source, {{"limit_key", type text}, {"limit_name", type text}, {"limit_short", type text}, {"limit_value", type number}, {"unit", type text}, {"amber_threshold", type number}, {"data_label", type text}}, "en-US")
 				in
 				    Typed
 

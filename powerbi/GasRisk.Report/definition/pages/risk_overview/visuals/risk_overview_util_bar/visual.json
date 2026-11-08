@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "risk_overview_util_bar",
   "position": {
-    "x": 860,
+    "x": 780,
     "y": 130,
     "z": 5,
-    "width": 400,
+    "width": 480,
     "height": 330,
     "tabOrder": 5
   },
@@ -23,11 +23,12 @@
                       "Entity": "DimLimit"
                     }
                   },
-                  "Property": "limit_name"
+                  "Property": "limit_short"
                 }
               },
-              "queryRef": "DimLimit.limit_name",
-              "nativeQueryRef": "limit_name"
+              "queryRef": "DimLimit.limit_short",
+              "nativeQueryRef": "limit_short",
+              "displayName": "Limit"
             }
           ]
         },
@@ -50,6 +51,24 @@
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "FactLimitUtilisation"
+                  }
+                },
+                "Property": "Latest Utilisation"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": false
       }
     },
     "visualContainerObjects": {
@@ -90,6 +109,26 @@
               "expr": {
                 "Literal": {
                   "Value": "'Share of limit'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Limit'"
                 }
               }
             }

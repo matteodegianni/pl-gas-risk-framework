@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "DimDate.date",
-              "nativeQueryRef": "date"
+              "nativeQueryRef": "date",
+              "displayName": "Date"
             }
           ]
         },
@@ -105,6 +106,26 @@
               "expr": {
                 "Literal": {
                   "Value": "'PLN'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Date'"
                 }
               }
             }

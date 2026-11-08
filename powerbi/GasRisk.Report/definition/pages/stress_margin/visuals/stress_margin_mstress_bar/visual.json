@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
   "name": "stress_margin_mstress_bar",
   "position": {
-    "x": 20,
-    "y": 430,
-    "z": 5,
-    "width": 620,
-    "height": 280,
-    "tabOrder": 5
+    "x": 660,
+    "y": 90,
+    "z": 2,
+    "width": 600,
+    "height": 500,
+    "tabOrder": 2
   },
   "visual": {
     "visualType": "clusteredBarChart",
@@ -51,6 +51,24 @@
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "FactMarginStress"
+                  }
+                },
+                "Property": "Stress Margin Call"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": false
       }
     },
     "visualContainerObjects": {
@@ -67,7 +85,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Stress margin calls (EUR)'"
+                  "Value": "'Stress margin calls (EUR, positive = cash paid out)'"
                 }
               }
             }
@@ -91,6 +109,26 @@
               "expr": {
                 "Literal": {
                   "Value": "'EUR'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Scenario'"
                 }
               }
             }

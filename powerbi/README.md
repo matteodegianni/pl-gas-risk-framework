@@ -10,12 +10,12 @@ open in Desktop is also its first real test: use the checklist below.
 
 ```text
 GasRisk.pbip                       open this file in Power BI Desktop
-GasRisk.SemanticModel/             TMDL: 17 tables, 15 relationships, 56 DAX measures
+GasRisk.SemanticModel/             TMDL: 17 tables, 15 relationships, 57 DAX measures
   definition/model.tmdl            model settings and table list
   definition/expressions.tmdl      DataFolder parameter and fnLoadCsv loader
   definition/relationships.tmdl    star schema (many-to-one, single direction)
   definition/tables/*.tmdl         one file per table: columns, measures, Power Query partition
-GasRisk.Report/                    PBIR: 4 pages, 24 visuals, base theme plus custom theme
+GasRisk.Report/                    PBIR: 4 pages, 26 visuals, base theme plus custom theme
 GasRiskMinimal.pbip                one-page test report on the same model, to isolate report-loading problems
 GasRiskMinimal.Report/             PBIR: 1 page, 2 cards, base theme only
 resources/CY24SU06.json            Power BI base theme, copied from microsoft/semantic-link-labs (MIT, Microsoft)
@@ -48,8 +48,10 @@ cumulative P&L, counterparty exposure, PFE and limit use.
 2. **Backtesting**: observed and expected 99% exceptions by method; Kupiec and Christoffersen p-values with pass or
    fail; realised P&L against the official VaR plotted as a negative loss threshold (-VaR), so exceptions are the
    points below the line.
-3. **Stress and margin**: stress loss by scenario split by risk factor; 10-day margin forecast (mean, 95%, 99%);
-   initial margin, liquidity buffer and its share of the bank credit line; stress margin calls.
+3. **Stress and margin** (a taller page, 1280 x 920, so no chart scrolls): stress loss by scenario split by risk
+   factor and stress margin calls, each showing every scenario sorted largest first; 10-day margin forecast (mean,
+   95%, 99%); largest stress margin call and its share of the bank credit line; initial margin, liquidity buffer and
+   its share of the credit line.
 4. **P&L attribution**: contract P&L; P&L by driver; cumulative P&L; monthly P&L by driver group.
 
 ## Formatting
@@ -57,8 +59,10 @@ cumulative P&L, counterparty exposure, PFE and limit use.
 - Money cards show millions with 2 decimals (for example 3.68M); count and percentage cards keep their own format.
   Card titles name the figure, so the category label under the value is hidden.
 - Tables have no total row: sums of p-values, test levels, breach days across limits or utilisations mean nothing.
-- Stress charts use `scenario_short` from `dim_scenario` (at most 24 characters, built by
-  `gasrisk.export.short_scenario`); the full name stays in `scenario`.
+- Stress charts use `scenario_short` from `dim_scenario` (at most 21 characters, built by
+  `gasrisk.export.short_scenario`) and the limit charts use `limit_short` from `dim_limit` (VaR 99%, Gas exposure, FX
+  open position); the full names stay in `scenario` and `limit_name`.
+- The synthetic-data label is a card with no header, showing only "Synthetic book on real market data".
 - Series and columns carry short display names (Mean, 95%, 99%; Observed, Expected), and value axes are titled with
   the unit (PLN, EUR).
 
@@ -102,8 +106,13 @@ To refresh the data after a pipeline run: `python -m gasrisk.pipeline` rewrites 
   October 2026 (Desktop 2.159); `report.json` has a base theme and every resource-package file exists; no legacy
   `report.json` sits next to `definition/`.
 - Report content: every field used by a visual exists as a column or measure; every page has the synthetic-data label.
-- Presentation (rules added after the first review in Desktop): no table has a total row; no card shows the
-  category label under its value; labels on a horizontal bar chart axis are at most 24 characters in the data.
+- Presentation (rules added after reviewing Desktop's PDF export): no table has a total row; no card shows the
+  category label under its value; every visual lies inside its page; no chart shows a raw column name as an axis or
+  legend title; on a horizontal bar chart the longest label fits the label area and the chart is tall enough for every
+  category that has data, so nothing scrolls (column charts: wide enough). The pixel thresholds are calibrated on the
+  Desktop 2.159 export: labels truncated past about 6 px per character in a quarter of the chart width, and bar rows
+  took about 22 px (the rule uses 24). Run against the exported version, the rules report the truncated limit labels,
+  both scrolling scenario charts and the raw `limit_name`, `method_name` and `date` titles.
 - The validator was tested by injecting errors (unknown column, unknown measure, invalid page property, extra visual
   property, broken relationship, a measure named like a column, a duplicate measure name, and 13 broken report
   structures and the three presentation findings in `tests/test_powerbi.py`); it reported all of them.

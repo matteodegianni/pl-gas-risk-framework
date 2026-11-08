@@ -151,18 +151,81 @@ def _visual(page, name):
 def test_presentation_rules_catch_the_first_review_findings(tmp_path) -> None:
     v = _load("validate_pbip")
     tables = {"DimScenario": {}}
-    data = {"DimScenario": __import__("pandas").read_csv(ROOT / "exports" / "dim_scenario.csv")}
+    data = _data("DimScenario", "FactStress")
     tests = json.loads(_visual("backtesting", "backtesting_tests").read_text(encoding="utf-8"))
     card = json.loads(_visual("risk_overview", "risk_overview_var_card").read_text(encoding="utf-8"))
     bar = json.loads(_visual("stress_margin", "stress_margin_stress_bar").read_text(encoding="utf-8"))
     for vis in (tests, card, bar):
-        assert v.presentation_errors(vis, tables, data, "x") == []
+        assert v.presentation_errors(vis, tables, data, "x", rels=_rels()) == []
     del tests["visual"]["objects"]["total"]
     del card["visual"]["objects"]["categoryLabels"]
     bar["visual"]["query"]["queryState"]["Category"]["projections"][0]["field"]["Column"]["Property"] = "scenario"
     assert "total row" in v.presentation_errors(tests, tables, data, "x")[0]
     assert "category label" in v.presentation_errors(card, tables, data, "x")[0]
-    assert "labels up to" in v.presentation_errors(bar, tables, data, "x")[0]
+    assert any("labels up to" in e for e in v.presentation_errors(bar, tables, data, "x", rels=_rels()))
+
+
+def _rels():
+    import re
+
+    rel = (ROOT / "powerbi/GasRisk.SemanticModel/definition/relationships.tmdl").read_text(encoding="utf-8")
+    out = []
+    for frm, to in re.findall(r"fromColumn: (\S+)\n\ttoColumn: (\S+)", rel):
+        (ft, fc), (tt, tc) = frm.split(".", 1), to.split(".", 1)
+        out.append((ft, fc, tt, tc))
+    return out
+
+
+def _data(*names):
+    import pandas as pd
+
+    files = {"DimScenario": "dim_scenario", "FactStress": "fact_stress", "FactMarginStress": "fact_margin_stress",
+             "DimLimit": "dim_limit", "FactLimitUtilisation": "fact_limit_utilisation"}
+    return {n: pd.read_csv(ROOT / "exports" / f"{files[n]}.csv") for n in names}
+
+
+def test_scenario_charts_show_every_scenario_without_scrolling() -> None:
+    # Desktop's PDF export of the first layout hid scenarios behind a scrollbar, including the largest margin call.
+    v = _load("validate_pbip")
+    data = _data("DimScenario", "FactStress", "FactMarginStress")
+    rels = _rels()
+    assert v.category_count(data, rels, "DimScenario", "scenario_short", "FactMarginStress") == 17
+    assert v.category_count(data, rels, "DimScenario", "scenario_short", "FactStress") == 14
+    for name in ("stress_margin_mstress_bar", "stress_margin_stress_bar"):
+        vis = json.loads(_visual("stress_margin", name).read_text(encoding="utf-8"))
+        assert v.presentation_errors(vis, {}, data, name, rels=rels, page=(1280, 920)) == []
+        assert vis["visual"]["query"]["sortDefinition"]["sort"][0]["direction"] == "Descending"
+        vis["position"]["height"] = 280  # the first layout
+        errs = v.presentation_errors(vis, {}, data, name, rels=rels, page=(1280, 920))
+        assert any("the chart would scroll" in e for e in errs), errs
+
+
+def test_limit_labels_fit_and_axis_titles_are_not_raw_column_names() -> None:
+    v = _load("validate_pbip")
+    data = _data("DimLimit", "FactLimitUtilisation")
+    vis = json.loads(_visual("risk_overview", "risk_overview_util_bar").read_text(encoding="utf-8"))
+    assert v.presentation_errors(vis, {}, data, "u", rels=_rels(), page=(1280, 720)) == []
+    proj = vis["visual"]["query"]["queryState"]["Category"]["projections"][0]
+    proj["field"]["Column"]["Property"] = "limit_name"  # long names, as in the first export
+    vis["position"]["width"] = 400
+    errs = v.presentation_errors(vis, {}, data, "u", rels=_rels(), page=(1280, 720))
+    assert any("labels up to 20 characters, a 400 px bar chart shows about 16" in e for e in errs), errs
+    del proj["displayName"]
+    del vis["visual"]["objects"]["categoryAxis"]
+    errs = v.presentation_errors(vis, {}, data, "u", rels=_rels(), page=(1280, 720))
+    assert any("raw column name" in e for e in errs), errs
+
+
+def test_visual_outside_the_page_is_rejected() -> None:
+    v = _load("validate_pbip")
+    vis = json.loads(_visual("stress_margin", "stress_margin_callshare_card").read_text(encoding="utf-8"))
+    assert v.presentation_errors(vis, {}, {}, "c", page=(1280, 920)) == []
+    assert "beyond the 1280 x 720 page" in v.presentation_errors(vis, {}, {}, "c", page=(1280, 720))[0]
+
+
+def test_label_card_has_no_header() -> None:
+    vis = json.loads(_visual("risk_overview", "risk_overview_label").read_text(encoding="utf-8"))
+    assert vis["visual"]["visualContainerObjects"]["title"][0]["properties"]["show"]["expr"]["Literal"]["Value"] == "false"
 
 
 def test_money_cards_show_millions_with_two_decimals() -> None:
@@ -191,4 +254,4 @@ def test_short_scenario_labels_are_unique_and_short() -> None:
     assert d["scenario_short"].is_unique
     assert d["scenario_short"].str.len().max() <= SHORT_SCENARIO_MAX
     assert short_scenario("worst 5-day crisis move") == "Crisis worst 5d"
-    assert short_scenario("x" * 40) == "x" * 23 + "."
+    assert short_scenario("x" * 40) == "x" * (SHORT_SCENARIO_MAX - 1) + "."

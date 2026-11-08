@@ -27,7 +27,8 @@
                 }
               },
               "queryRef": "DimMethod.method_name",
-              "nativeQueryRef": "method_name"
+              "nativeQueryRef": "method_name",
+              "displayName": "Method"
             }
           ]
         },
@@ -105,6 +106,26 @@
               "expr": {
                 "Literal": {
                   "Value": "'Exceptions'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Method'"
                 }
               }
             }

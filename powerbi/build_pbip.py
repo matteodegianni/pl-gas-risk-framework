@@ -118,6 +118,7 @@ MEASURES: dict[str, list[tuple[str, str, str]]] = {
         ("Stress Margin Call", "SUM ( FactMarginStress[margin_call_eur] )", "#,0"),
         ("Stress Margin Call PLN", "SUM ( FactMarginStress[margin_call_pln] )", "#,0"),
         ("Credit Line Utilisation", "MAX ( FactMarginStress[credit_line_utilisation] )", "0.0%"),
+        ("Largest Stress Margin Call", "MAX ( FactMarginStress[margin_call_eur] )", "#,0"),
     ],
     "FactAttribution": [
         ("Attributed P&L", "SUM ( FactAttribution[pnl_pln] )", "#,0"),
@@ -302,7 +303,7 @@ def props(**kw) -> list[dict]:
 
 
 def visual(name: str, vtype: str, x: int, y: int, w: int, h: int, roles: dict[str, list[dict]], title: str, z: int,
-           objects: dict | None = None) -> dict:
+           objects: dict | None = None, sort_desc: dict | None = None) -> dict:
     v = {
         "$schema": f"{SCHEMA}/item/report/definition/visualContainer/1.0.0/schema.json",
         "name": name,
@@ -316,6 +317,9 @@ def visual(name: str, vtype: str, x: int, y: int, w: int, h: int, roles: dict[st
     }
     if objects:
         v["visual"]["objects"] = objects
+    if sort_desc:  # sort categories by this field, largest first
+        v["visual"]["query"]["sortDefinition"] = {"sort": [{"field": sort_desc["field"], "direction": "Descending"}],
+                                                  "isDefaultSort": False}
     return v
 
 
@@ -342,9 +346,20 @@ def axis_titles(value: str, category: str | None = None) -> dict:
 
 
 def label_card(page: str, z: int) -> dict:
-    # Synthetic-data label: small value font so the whole text fits the box.
-    return visual(f"{page}_label", "card", 900, 10, 360, 70, {"Values": [mea("FactVaR", "Data Label")]}, "Data", z,
-                  {"labels": props(fontSize=11.0), "categoryLabels": props(show=False)})
+    # Synthetic-data label: no title, small value font so the whole text fits the box.
+    v = visual(f"{page}_label", "card", 900, 10, 360, 60, {"Values": [mea("FactVaR", "Data Label")]}, "", z,
+               {"labels": props(fontSize=11.0), "categoryLabels": props(show=False)})
+    v["visual"]["visualContainerObjects"]["title"] = props(show=False)
+    return v
+
+
+def hbar(name: str, vtype: str, x: int, y: int, w: int, h: int, category: dict, value: dict, title: str, z: int,
+         unit: str, axis: str, series: dict | None = None) -> dict:
+    """Horizontal bar chart sorted by value, with both axes titled. Height must fit every category (validator rule)."""
+    roles = {"Category": [category], "Y": [value]}
+    if series:
+        roles["Series"] = [series]
+    return visual(name, vtype, x, y, w, h, roles, title, z, axis_titles(unit, axis), sort_desc=value)
 
 
 PAGES = [
@@ -354,26 +369,27 @@ PAGES = [
         card(f"{p}_limit_card", 300, 10, 270, 110, mea("FactVaR", "VaR Limit"), "VaR limit (PLN)", 2),
         card(f"{p}_breach_card", 580, 10, 300, 110, mea("FactLimitUtilisation", "Limits In Breach Today"),
              "Limits in breach today", 3, millions=False),
-        visual(f"{p}_var_line", "lineChart", 20, 130, 820, 330,
-               {"Category": [col("DimDate", "date")],
+        visual(f"{p}_var_line", "lineChart", 20, 130, 740, 330,
+               {"Category": [col("DimDate", "date", "Date")],
                 "Y": [mea("FactVaR", "Official VaR 99", "Official 99% VaR"), mea("FactVaR", "VaR Limit", "VaR limit")]},
-               "Official 99% VaR against the limit (PLN)", 4, axis_titles("PLN")),
-        visual(f"{p}_util_bar", "clusteredBarChart", 860, 130, 400, 330,
-               {"Category": [col("DimLimit", "limit_name")], "Y": [mea("FactLimitUtilisation", "Latest Utilisation", "Utilisation")]},
-               "Limit utilisation today", 5, axis_titles("Share of limit")),
-        visual(f"{p}_util_line", "lineChart", 20, 470, 820, 240,
-               {"Category": [col("DimDate", "date")], "Y": [mea("FactLimitUtilisation", "Limit Utilisation %", "Utilisation")],
-                "Series": [col("DimLimit", "limit_name")]}, "Utilisation history by limit", 6, axis_titles("Share of limit")),
-        table(f"{p}_breach_table", 860, 470, 400, 240,
-              [col("DimLimit", "limit_name", "Limit"), mea("FactLimitUtilisation", "Breach Days", "Breach days"),
+               "Official 99% VaR against the limit (PLN)", 4, axis_titles("PLN", "Date")),
+        hbar(f"{p}_util_bar", "clusteredBarChart", 780, 130, 480, 330, col("DimLimit", "limit_short", "Limit"),
+             mea("FactLimitUtilisation", "Latest Utilisation", "Utilisation"), "Limit utilisation today", 5,
+             "Share of limit", "Limit"),
+        visual(f"{p}_util_line", "lineChart", 20, 470, 740, 240,
+               {"Category": [col("DimDate", "date", "Date")], "Y": [mea("FactLimitUtilisation", "Limit Utilisation %", "Utilisation")],
+                "Series": [col("DimLimit", "limit_short", "Limit")]}, "Utilisation history by limit", 6,
+               axis_titles("Share of limit", "Date")),
+        table(f"{p}_breach_table", 780, 470, 480, 240,
+              [col("DimLimit", "limit_short", "Limit"), mea("FactLimitUtilisation", "Breach Days", "Breach days"),
                mea("FactLimitUtilisation", "Amber Days", "Amber days")], "Breach and amber days", 7),
     ]),
     ("backtesting", "Backtesting", lambda p: [
         label_card(p, 0),
         visual(f"{p}_exc_col", "clusteredColumnChart", 20, 90, 520, 300,
-               {"Category": [col("DimMethod", "method_name")],
+               {"Category": [col("DimMethod", "method_name", "Method")],
                 "Y": [mea("FactVaR", "Exceptions 99", "Observed"), mea("FactVaR", "Expected Exceptions 99", "Expected")]},
-               "99% VaR exceptions by method: observed and expected", 1, axis_titles("Exceptions")),
+               "99% VaR exceptions by method: observed and expected", 1, axis_titles("Exceptions", "Method")),
         table(f"{p}_tests", 560, 90, 700, 300,
               [col("DimMethod", "method_name", "Method"), col("FactBacktest", "level", "Level"),
                mea("FactBacktest", "Observed Exceptions", "Observed"), mea("FactBacktest", "Expected Exceptions", "Expected"),
@@ -381,48 +397,52 @@ PAGES = [
                mea("FactBacktest", "Conditional Coverage p", "Christoffersen CC p"),
                mea("FactBacktest", "Coverage Result", "CC")], "Kupiec and Christoffersen tests", 2),
         visual(f"{p}_pnl_line", "lineChart", 20, 400, 1240, 310,
-               {"Category": [col("DimDate", "date")],
+               {"Category": [col("DimDate", "date", "Date")],
                 "Y": [mea("FactVaR", "Realised P&L", "Realised P&L"),
                       mea("FactVaR", "Official VaR 99 Loss Threshold", "-VaR 99 (loss threshold)")]},
                "Realised next-day P&L against the official 99% VaR loss threshold (PLN): exceptions fall below the line", 3,
-               axis_titles("PLN")),
+               axis_titles("PLN", "Date")),
     ]),
+    # Taller page (PAGE_HEIGHT): both scenario charts show every scenario without scrolling, sorted largest first.
     ("stress_margin", "Stress and margin", lambda p: [
         label_card(p, 0),
-        visual(f"{p}_stress_bar", "barChart", 20, 90, 620, 330,
-               {"Category": [col("DimScenario", "scenario_short", "Scenario")], "Y": [mea("FactStress", "Stress Loss", "Loss")],
-                "Series": [col("DimRiskFactor", "factor_name", "Risk factor")]}, "Stress loss by scenario and risk factor (PLN)", 1,
-               axis_titles("PLN")),
-        visual(f"{p}_margin_col", "lineChart", 660, 90, 600, 330,
+        hbar(f"{p}_stress_bar", "barChart", 20, 90, 620, 470, col("DimScenario", "scenario_short", "Scenario"),
+             mea("FactStress", "Stress Loss", "Loss"), "Stress loss by scenario and risk factor (PLN)", 1, "PLN", "Scenario",
+             series=col("DimRiskFactor", "factor_name", "Risk factor")),
+        hbar(f"{p}_mstress_bar", "clusteredBarChart", 660, 90, 600, 500, col("DimScenario", "scenario_short", "Scenario"),
+             mea("FactMarginStress", "Stress Margin Call", "Margin call"),
+             "Stress margin calls (EUR, positive = cash paid out)", 2, "EUR", "Scenario"),
+        visual(f"{p}_margin_col", "lineChart", 20, 580, 620, 330,
                {"Category": [col("FactMarginForecast", "day", "Day")],
                 "Y": [mea("FactMarginForecast", "Margin Outflow Mean", "Mean"), mea("FactMarginForecast", "Margin Outflow 95", "95%"),
                       mea("FactMarginForecast", "Margin Outflow 99", "99%")]},
-               "Margin forecast: cumulative outflow over 10 days (EUR)", 2, axis_titles("EUR", "Business day")),
-        card(f"{p}_im_card", 660, 430, 290, 100, mea("FactMarginForecast", "Initial Margin Today"), "Initial margin today (EUR)", 3),
-        card(f"{p}_buffer_card", 970, 430, 290, 100, mea("FactMarginForecast", "Liquidity Buffer"),
-             "10-day 99% liquidity buffer (EUR)", 4),
-        visual(f"{p}_mstress_bar", "clusteredBarChart", 20, 430, 620, 280,
-               {"Category": [col("DimScenario", "scenario_short", "Scenario")],
-                "Y": [mea("FactMarginStress", "Stress Margin Call", "Margin call")]},
-               "Stress margin calls (EUR)", 5, axis_titles("EUR")),
-        card(f"{p}_line_card", 660, 540, 600, 100, mea("FactMarginForecast", "Buffer Over Credit Line"),
-             "Buffer as a share of the bank credit line", 6, millions=False),
+               "Margin forecast: cumulative outflow over 10 days (EUR)", 3, axis_titles("EUR", "Business day")),
+        card(f"{p}_call_card", 660, 610, 600, 100, mea("FactMarginStress", "Largest Stress Margin Call"),
+             "Largest stress margin call (EUR)", 4),
+        card(f"{p}_im_card", 660, 720, 195, 90, mea("FactMarginForecast", "Initial Margin Today"), "Initial margin (EUR)", 5),
+        card(f"{p}_buffer_card", 863, 720, 195, 90, mea("FactMarginForecast", "Liquidity Buffer"), "10-day buffer (EUR)", 6),
+        card(f"{p}_line_card", 1066, 720, 194, 90, mea("FactMarginForecast", "Buffer Over Credit Line"),
+             "Buffer / credit line", 7, millions=False),
+        card(f"{p}_callshare_card", 660, 820, 600, 90, mea("FactMarginStress", "Credit Line Utilisation"),
+             "Largest stress call as a share of the bank credit line", 8, millions=False),
     ]),
     ("pnl_attribution", "P&L attribution", lambda p: [
         label_card(p, 0),
         card(f"{p}_total_card", 20, 10, 270, 110, mea("FactAttribution", "Total P&L"), "Contract P&L since signing (PLN)", 1),
-        visual(f"{p}_driver_bar", "clusteredBarChart", 20, 130, 560, 300,
-               {"Category": [col("DimDriver", "driver_name", "Driver")], "Y": [mea("FactAttribution", "Attributed P&L", "P&L")]},
-               "P&L by driver (PLN)", 2, axis_titles("PLN")),
+        hbar(f"{p}_driver_bar", "clusteredBarChart", 20, 130, 560, 300, col("DimDriver", "driver_name", "Driver"),
+             mea("FactAttribution", "Attributed P&L", "P&L"), "P&L by driver (PLN)", 2, "PLN", "Driver"),
         visual(f"{p}_cum_line", "lineChart", 600, 130, 660, 300,
-               {"Category": [col("DimDate", "date")], "Y": [mea("FactAttribution", "Cumulative P&L", "Cumulative P&L")]},
-               "Cumulative contract P&L (PLN)", 3, axis_titles("PLN")),
+               {"Category": [col("DimDate", "date", "Date")], "Y": [mea("FactAttribution", "Cumulative P&L", "Cumulative P&L")]},
+               "Cumulative contract P&L (PLN)", 3, axis_titles("PLN", "Date")),
         visual(f"{p}_monthly", "columnChart", 20, 440, 1240, 270,
                {"Category": [col("DimDate", "year_month", "Month")], "Y": [mea("FactAttribution", "Attributed P&L", "P&L")],
                 "Series": [col("DimDriver", "driver_group", "Driver group")]}, "Monthly P&L by driver group (PLN)", 4,
                axis_titles("PLN")),
     ]),
 ]
+
+
+PAGE_HEIGHT = {"stress_margin": 920}  # pixels; other pages are 1280 x 720
 
 
 # Desktop-saved PBIR (2025-2026) always has version.json 2.0.0 and a base theme from SharedResources; version 1.0.0 is
@@ -472,7 +492,8 @@ def report(pages: list = PAGES, custom_theme: bool = True) -> dict[str, str]:
     for pname, display, build in pages:
         files[f"definition/pages/{pname}/page.json"] = json.dumps({
             "$schema": f"{SCHEMA}/item/report/definition/page/1.0.0/schema.json",
-            "name": pname, "displayName": display, "displayOption": "FitToPage", "height": 720, "width": 1280}, indent=2) + "\n"
+            "name": pname, "displayName": display, "displayOption": "FitToPage",
+            "height": PAGE_HEIGHT.get(pname, 720), "width": 1280}, indent=2) + "\n"
         for v in build(pname):
             files[f"definition/pages/{pname}/visuals/{v['name']}/visual.json"] = json.dumps(v, indent=2) + "\n"
     return files

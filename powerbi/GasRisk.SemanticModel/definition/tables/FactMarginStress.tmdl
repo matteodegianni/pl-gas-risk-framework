@@ -13,6 +13,10 @@ table FactMarginStress
 		formatString: 0.0%
 		lineageTag: 41ddabe0-8aad-5e38-b1ee-d62931e40d06
 
+	measure 'Largest Stress Margin Call' = MAX ( FactMarginStress[margin_call_eur] )
+		formatString: #,0
+		lineageTag: 4dc44a03-3fa5-5f18-a3f7-725ece9b6813
+
 	column ttf_move
 		dataType: double
 		lineageTag: bc5484db-9b20-5c2e-bbfb-1ee5cde4e6b7

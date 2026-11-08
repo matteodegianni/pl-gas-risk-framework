@@ -32,7 +32,7 @@ DRIVERS = {"plan_margin": ("Plan margin", "plan"), "volume_effect": ("Volume", "
            "fx_effect_forward": ("EUR forward", "fx")}
 
 
-SHORT_SCENARIO_MAX = 24  # characters: fits the category axis of the dashboard's stress charts
+SHORT_SCENARIO_MAX = 21  # characters: fits the category axis of the dashboard's stress charts
 SHORT_PATTERNS = [  # (regex on the full scenario name, short label template)
     (r"^worst (\d+)-day crisis move$", "Crisis worst {0}d"),
     (r"^worst (\d+)-day TTF fall in crisis$", "TTF fall worst {0}d"),
@@ -45,7 +45,7 @@ SHORT_NAMES = {
     "gas complex +50% (TGE and TTF)": "Gas +50%",
     "gas complex -50% (TGE and TTF)": "Gas -50%",
     "combined: gas complex +50% and EUR/PLN +5%": "Gas +50%, EUR/PLN +5%",
-    "volatility stress: crisis 99th percentile volatility, price unchanged": "Vol stress (crisis p99)",
+    "volatility stress: crisis 99th percentile volatility, price unchanged": "Vol stress p99",
 }
 
 
@@ -140,9 +140,12 @@ def build_tables(cfg: Config) -> dict[str, pd.DataFrame]:
     dim_method = pd.DataFrame([{"method_key": k, "method_name": v, "is_official": int(k == official)} for k, v in METHOD_NAMES.items()])
     dim_factor = pd.DataFrame(FACTOR_ROWS, columns=["factor_key", "factor_name", "unit", "source"])
     dim_limit = pd.DataFrame([
-        {"limit_key": "var_99", "limit_name": "99% VaR (official)", "limit_value": float(lim_cfg["var99_limit_pln"]), "unit": "PLN"},
-        {"limit_key": "open_gas", "limit_name": "Open gas exposure", "limit_value": float(lim_cfg["open_gas_exposure_limit_pln"]), "unit": "PLN"},
-        {"limit_key": "fx_net_open", "limit_name": "FX net open position", "limit_value": float(lim_cfg["fx_net_open_limit_eur"]), "unit": "EUR"},
+        {"limit_key": "var_99", "limit_name": "99% VaR (official)", "limit_short": "VaR 99%",
+         "limit_value": float(lim_cfg["var99_limit_pln"]), "unit": "PLN"},
+        {"limit_key": "open_gas", "limit_name": "Open gas exposure", "limit_short": "Gas exposure",
+         "limit_value": float(lim_cfg["open_gas_exposure_limit_pln"]), "unit": "PLN"},
+        {"limit_key": "fx_net_open", "limit_name": "FX net open position", "limit_short": "FX open position",
+         "limit_value": float(lim_cfg["fx_net_open_limit_eur"]), "unit": "EUR"},
     ]).assign(amber_threshold=amber)
     util = util.merge(dim_limit[["limit_key", "limit_value"]], on="limit_key")
     dim_driver = pd.DataFrame([{"driver_key": k, "driver_name": v[0], "driver_group": v[1]} for k, v in DRIVERS.items()])

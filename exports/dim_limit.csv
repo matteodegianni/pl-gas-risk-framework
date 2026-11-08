@@ -1,4 +1,4 @@
-limit_key,limit_name,limit_value,unit,amber_threshold,data_label
-var_99,99% VaR (official),25000000.0,PLN,0.8,synthetic book on real market data
-open_gas,Open gas exposure,60000000.0,PLN,0.8,synthetic book on real market data
-fx_net_open,FX net open position,12000000.0,EUR,0.8,synthetic book on real market data
+limit_key,limit_name,limit_short,limit_value,unit,amber_threshold,data_label
+var_99,99% VaR (official),VaR 99%,25000000.0,PLN,0.8,synthetic book on real market data
+open_gas,Open gas exposure,Gas exposure,60000000.0,PLN,0.8,synthetic book on real market data
+fx_net_open,FX net open position,FX open position,12000000.0,EUR,0.8,synthetic book on real market data

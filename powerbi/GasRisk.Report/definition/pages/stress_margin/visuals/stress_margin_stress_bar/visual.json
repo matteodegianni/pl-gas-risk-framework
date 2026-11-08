@@ -6,7 +6,7 @@
     "y": 90,
     "z": 1,
     "width": 620,
-    "height": 330,
+    "height": 470,
     "tabOrder": 1
   },
   "visual": {
@@ -70,6 +70,24 @@
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "FactStress"
+                  }
+                },
+                "Property": "Stress Loss"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": false
       }
     },
     "visualContainerObjects": {
@@ -110,6 +128,26 @@
               "expr": {
                 "Literal": {
                   "Value": "'PLN'"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "categoryAxis": [
+        {
+          "properties": {
+            "showAxisTitle": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "titleText": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Scenario'"
                 }
               }
             }
