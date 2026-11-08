@@ -231,3 +231,44 @@ margin:
   bank_credit_line_eur: 25000000  # SYNTHETIC committed bank facility for margin funding (round number)
   crisis_window: ["2021-07-01", "2022-12-31"]
   fx_stress: 0.05                 # EUR/PLN +5% for the PLN cost of an EUR margin call (Stage 8 shock size)
+
+credit:
+  # Stage 13: OTC TTF forwards with SYNTHETIC counterparties (names, ratios, trades and limits are illustrative).
+  n_paths: 5000
+  months: 24                      # monthly exposure grid
+  days_per_month: 21
+  pfe_levels: [0.95, 0.975]
+  limit_pfe_level: 0.95           # rating-based limit applies to the peak PFE at this level
+  amber_threshold: 0.80
+  wwr_top_share: 0.10             # wrong-way illustration: exposure in the top 10% TTF paths
+  # trades: side from the supplier's view; strike as a multiple of today's TTF; delivery months counted from the
+  # month after the as-of date (1 = next month); volume per delivery month in MWh.
+  counterparties:
+    - {id: CP01, type: "trading house (synthetic)", revenue_eur_m: 9000, net_debt_to_ebitda: 0.8, interest_coverage: 14.0, current_ratio: 1.6, ebitda_margin: 0.06,
+       trades: [{side: buy, start: 1, end: 12, mwh_per_month: 20000, strike_x_f: 1.00}]}
+    - {id: CP02, type: "regional gas wholesaler (synthetic)", revenue_eur_m: 650, net_debt_to_ebitda: 2.6, interest_coverage: 5.5, current_ratio: 1.2, ebitda_margin: 0.08,
+       trades: [{side: buy, start: 1, end: 6, mwh_per_month: 30000, strike_x_f: 0.95}]}
+    - {id: CP03, type: "municipal utility (synthetic)", revenue_eur_m: 1200, net_debt_to_ebitda: 1.9, interest_coverage: 8.0, current_ratio: 1.4, ebitda_margin: 0.12,
+       trades: [{side: sell, start: 1, end: 12, mwh_per_month: 15000, strike_x_f: 1.05}]}
+    - {id: CP04, type: "independent gas trader (synthetic)", revenue_eur_m: 180, net_debt_to_ebitda: 4.8, interest_coverage: 2.1, current_ratio: 0.9, ebitda_margin: 0.03,
+       trades: [{side: buy, start: 1, end: 18, mwh_per_month: 25000, strike_x_f: 0.90}]}
+    - {id: CP05, type: "industrial gas consumer (synthetic)", revenue_eur_m: 2400, net_debt_to_ebitda: 2.2, interest_coverage: 6.5, current_ratio: 1.3, ebitda_margin: 0.10,
+       trades: [{side: buy, start: 1, end: 12, mwh_per_month: 20000, strike_x_f: 1.00},
+                {side: sell, start: 1, end: 6, mwh_per_month: 15000, strike_x_f: 1.02}]}
+    - {id: CP06, type: "integrated energy major (synthetic)", revenue_eur_m: 40000, net_debt_to_ebitda: 1.1, interest_coverage: 18.0, current_ratio: 1.1, ebitda_margin: 0.15,
+       trades: [{side: buy, start: 1, end: 24, mwh_per_month: 10000, strike_x_f: 1.00}]}
+  scorecard:
+    # ratio: [weight, higher_is_better, thresholds for scores 2, 3, 4, 5]
+    net_debt_to_ebitda: [0.25, false, [4.0, 3.0, 2.0, 1.0]]
+    interest_coverage:  [0.25, true,  [2.0, 4.0, 7.0, 12.0]]
+    current_ratio:      [0.15, true,  [1.0, 1.2, 1.5, 2.0]]
+    ebitda_margin:      [0.15, true,  [0.04, 0.07, 0.10, 0.15]]
+    revenue_eur_m:      [0.20, true,  [250, 1000, 5000, 20000]]
+  # weighted score (1-5) -> internal grade; PFE limit in EUR per grade (SYNTHETIC round numbers)
+  grades:
+    - {grade: 1, label: "AA equivalent", min_score: 4.25, pfe_limit_eur: 20000000}
+    - {grade: 2, label: "A equivalent", min_score: 3.50, pfe_limit_eur: 12000000}
+    - {grade: 3, label: "BBB equivalent", min_score: 2.75, pfe_limit_eur: 8000000}
+    - {grade: 4, label: "BB equivalent", min_score: 2.00, pfe_limit_eur: 4000000}
+    - {grade: 5, label: "B equivalent", min_score: 1.25, pfe_limit_eur: 1500000}
+    - {grade: 6, label: "CCC or below", min_score: 0.00, pfe_limit_eur: 0}

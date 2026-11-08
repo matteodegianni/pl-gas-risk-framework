@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1 (core market risk, Stages 1-9) complete.** Phase 2 (derivatives, margin and credit) and Phase 3 (framework and delivery) are not built yet.
+> Status: **Phases 1 and 2 (Stages 1-13) complete.** Phase 3 (framework and delivery) in progress.
 
 ## Repository layout
 
@@ -42,6 +42,8 @@ src/gasrisk/
   ttf_sim.py              shared TTF GARCH refit and path simulation (Stages 10, 12, 13)
   margin.py               Stage 12: variation and initial margin, base and stress calls, liquidity buffer
   margin_report.py        generated Stage 12 report
+  credit.py               Stage 13: CE, EE, PFE by Monte Carlo, synthetic scorecard, credit limits
+  credit_report.py        generated Stage 13 report
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -79,6 +81,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 .venv/bin/python -m gasrisk.pricing       # Stage 10 (fetches the ECB yield curve; --offline reuses it)
 .venv/bin/python -m gasrisk.hedging       # Stage 11
 .venv/bin/python -m gasrisk.margin        # Stage 12
+.venv/bin/python -m gasrisk.credit        # Stage 13
 ```
 
 ```bash
@@ -205,6 +208,15 @@ Generated results: [outputs/stage12_report.md](outputs/stage12_report.md). Posit
 - Base forecast: 20,000 FHS-GARCH paths over 10 days with IM recomputed along each path; stress: Stage 8 scenarios plus the worst crisis TTF falls, with IM after the scenario, and a volatility-only stress.
 - Liquidity buffer: 99% quantile of the 10-day cumulative margin outflow in EUR and PLN, against a synthetic credit line, with a historical check.
 - Key findings (from the generated report): IM today 3,676,450 EUR (12.30% of notional); 10-day buffer 7,085,393 EUR (31,122,589 PLN, 28.3% of the credit line). The largest stress call is the worst 10-day TTF fall of the crisis, 17,864,382 EUR (71.5% of the line). The P&L stress scenarios (TGE spikes) bring cash in on the hedge: liquidity risk sits in the opposite scenario, a TTF collapse.
+
+## Stage 13 - counterparty credit risk
+
+Generated results: [outputs/stage13_report.md](outputs/stage13_report.md). Counterparties, ratios, trades and limits are **synthetic**.
+
+- OTC TTF forward strips with six synthetic counterparties; Monte Carlo of TTF with the refitted GARCH(1,1)-t (5,000 paths, daily steps, monthly grid, flat curve); CE, EE, PFE 95% and 97.5% per counterparty with and without netting, discounted on the ECB curve.
+- Scorecard from five synthetic financial ratios (leverage, interest coverage, current ratio, EBITDA margin, size) mapped to an internal grade; the grade sets the limit on peak 95% PFE; utilisation and breach status as in Stage 7.
+- **Wrong-way risk is a documented limitation**: the model treats exposure and default as independent; the report shows how much higher exposure is in high-price paths.
+- Key findings (from the generated report): CP04 (grade 5) breaches its PFE limit (utilisation 14.35) and CP05 is amber (0.96); netting lowers CP05's peak EE by 27.5%; for counterparties selling gas to the supplier, peak-month EE in the 10% highest-price paths is 4.56x to 5.92x the average, which is where wrong-way risk would bite.
 
 ## Licence
 

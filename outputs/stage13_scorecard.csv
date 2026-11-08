@@ -1,0 +1,7 @@
+counterparty,type,net_debt_to_ebitda,score_net_debt_to_ebitda,interest_coverage,score_interest_coverage,current_ratio,score_current_ratio,ebitda_margin,score_ebitda_margin,revenue_eur_m,score_revenue_eur_m,weighted_score,grade,grade_label,pfe_limit_eur
+CP01,trading house (synthetic),0.8,5,14.0,5,1.6,4,0.06,2,9000,4,4.2,2,A equivalent,12000000
+CP02,regional gas wholesaler (synthetic),2.6,3,5.5,3,1.2,3,0.08,3,650,2,2.8,3,BBB equivalent,8000000
+CP03,municipal utility (synthetic),1.9,4,8.0,4,1.4,3,0.12,4,1200,3,3.6500000000000004,2,A equivalent,12000000
+CP04,independent gas trader (synthetic),4.8,1,2.1,2,0.9,1,0.03,1,180,1,1.25,5,B equivalent,1500000
+CP05,industrial gas consumer (synthetic),2.2,3,6.5,3,1.3,3,0.1,4,2400,3,3.15,3,BBB equivalent,8000000
+CP06,integrated energy major (synthetic),1.1,4,18.0,5,1.1,2,0.15,5,40000,5,4.3,1,AA equivalent,20000000

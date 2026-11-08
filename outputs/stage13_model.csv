@@ -1,0 +1,2 @@
+as_of,paths,months,garch_mean,nu,persistence,sigma_next_daily,long_run_sigma_daily,ecb_curve_date
+2026-11-06,5000,24,ar5,10.334442467530911,0.9832233746995804,0.03818215381354325,0.03368091729841279,2026-11-05
