@@ -41,11 +41,11 @@
                       "Entity": "FactLimitUtilisation"
                     }
                   },
-                  "Property": "Utilisation"
+                  "Property": "Limit Utilisation %"
                 }
               },
-              "queryRef": "FactLimitUtilisation.Utilisation",
-              "nativeQueryRef": "Utilisation"
+              "queryRef": "FactLimitUtilisation.Limit Utilisation %",
+              "nativeQueryRef": "Limit Utilisation %"
             }
           ]
         },

@@ -75,18 +75,24 @@ To refresh the data after a pipeline run: `python -m gasrisk.pipeline` rewrites 
   in their `$schema`, with nested references resolved (from github.com/microsoft/json-schemas, cached locally).
 - TMDL: tab indentation, a file for every table in `model.tmdl`, a partition for every table that loads an existing
   CSV, and every `sourceColumn` and type transform matching the CSV header.
-- DAX: every `Table[Column]` and `[Measure]` reference resolves; measure names are unique.
+- Names: measure names are unique across the model and match no column name in any table, compared
+  case-insensitively as Power BI does. Desktop refused the first version of this project because the measure
+  `Utilisation` clashed with the `utilisation` columns of FactLimitUtilisation and FactCredit; it is now
+  `Limit Utilisation %`, and `tests/test_powerbi.py` re-inserts the old name to prove the validator rejects it.
+- DAX: every `Table[Column]` and `[Measure]` reference resolves.
 - Relationships: both columns exist, the one side is unique in the data, and every many-side key exists on it.
 - Report: page folders match `pages.json`; every field used by a visual exists as a column or measure; every page has
   the synthetic-data label.
 - The validator was tested by injecting errors (unknown column, unknown measure, invalid page property, extra visual
-  property, broken relationship); it reported all of them.
+  property, broken relationship, a measure named like a column, a duplicate measure name); it reported all of them.
 
 It cannot check DAX semantics, Power Query evaluation, or how the visuals render.
 
 ## What to check on first open
 
-1. **The project opens** without a "cannot load" error. If the report fails on the theme, delete `themeCollection` and
+1. **The project opens** without a "cannot load" error. A first attempt failed on a measure named like a column
+   (`Utilisation`); that is fixed and now checked. If Desktop reports another model error, add the rule to
+   `validate_pbip.py` before fixing it, so it cannot come back. If the report fails on the theme, delete `themeCollection` and
    `resourcePackages` from `GasRisk.Report/definition/report.json` (Desktop then uses its default theme).
 2. **Refresh succeeds** for all 17 tables (Home > Refresh). If types fail on a non-English locale, check that each
    partition's `Table.TransformColumnTypes` keeps the `"en-US"` culture argument.

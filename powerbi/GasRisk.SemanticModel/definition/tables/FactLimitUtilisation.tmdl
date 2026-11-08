@@ -1,13 +1,13 @@
 table FactLimitUtilisation
 	lineageTag: dee0fa51-d04f-5885-aa40-4271790bc999
 
-	measure Utilisation = AVERAGE ( FactLimitUtilisation[utilisation] )
+	measure 'Limit Utilisation %' = AVERAGE ( FactLimitUtilisation[utilisation] )
 		formatString: 0.00%
-		lineageTag: ebb800b9-04f4-5bb0-b4e0-5de41cfcc347
+		lineageTag: 5540d750-5f03-5945-92c2-2659b8f80ee2
 
 	measure 'Latest Utilisation' =
 			VAR d = CALCULATE ( MAX ( FactLimitUtilisation[date] ), ALL ( FactLimitUtilisation ), ALL ( DimDate ) )
-			RETURN CALCULATE ( [Utilisation], ALL ( DimDate ), FactLimitUtilisation[date] = d )
+			RETURN CALCULATE ( [Limit Utilisation %], ALL ( DimDate ), FactLimitUtilisation[date] = d )
 		formatString: 0.00%
 		lineageTag: b955d5d3-4d70-51bb-87ce-3c60a97949dc
 

@@ -81,10 +81,10 @@ MEASURES: dict[str, list[tuple[str, str, str]]] = {
         ("Tests Passed", "COUNTROWS ( FILTER ( FactBacktest, FactBacktest[pass_cc] = TRUE () ) )", "0"),
     ],
     "FactLimitUtilisation": [
-        ("Utilisation", "AVERAGE ( FactLimitUtilisation[utilisation] )", "0.00%"),
+        ("Limit Utilisation %", "AVERAGE ( FactLimitUtilisation[utilisation] )", "0.00%"),
         ("Latest Utilisation",
          "VAR d = CALCULATE ( MAX ( FactLimitUtilisation[date] ), ALL ( FactLimitUtilisation ), ALL ( DimDate ) )\n"
-         "RETURN CALCULATE ( [Utilisation], ALL ( DimDate ), FactLimitUtilisation[date] = d )", "0.00%"),
+         "RETURN CALCULATE ( [Limit Utilisation %], ALL ( DimDate ), FactLimitUtilisation[date] = d )", "0.00%"),
         ("Breach Days", "SUM ( FactLimitUtilisation[breach] )", "0"),
         ("Amber Days", "COUNTROWS ( FILTER ( FactLimitUtilisation, FactLimitUtilisation[status] = \"amber\" ) )", "0"),
         ("Limits In Breach Today",
@@ -311,7 +311,7 @@ PAGES = [
                {"Category": [col("DimLimit", "limit_name")], "Y": [mea("FactLimitUtilisation", "Latest Utilisation")]},
                "Limit utilisation today", 5),
         visual(f"{p}_util_line", "lineChart", 20, 470, 820, 240,
-               {"Category": [col("DimDate", "date")], "Y": [mea("FactLimitUtilisation", "Utilisation")],
+               {"Category": [col("DimDate", "date")], "Y": [mea("FactLimitUtilisation", "Limit Utilisation %")],
                 "Series": [col("DimLimit", "limit_name")]}, "Utilisation history by limit", 6),
         visual(f"{p}_breach_table", "tableEx", 860, 470, 400, 240,
                {"Values": [col("DimLimit", "limit_name"), mea("FactLimitUtilisation", "Breach Days"),

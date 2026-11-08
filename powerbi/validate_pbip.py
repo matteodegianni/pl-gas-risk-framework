@@ -11,7 +11,8 @@ Checks:
    named in its ``$schema`` (microsoft/json-schemas, resolved with all nested references).
 2. TMDL structure: indentation uses tabs, every table in ``model.tmdl`` has a file, every table has a partition, the
    partition reads an existing CSV and every ``sourceColumn`` exists in that CSV's header.
-3. DAX: every ``Table[Column]`` reference exists, every ``[Measure]`` reference exists, measure names are unique.
+3. Names and DAX: measure names are unique across the model and match no column name in any table (case-insensitive,
+   as in Power BI); every ``Table[Column]`` and ``[Measure]`` reference exists.
 4. Relationships: both columns exist, the one side is unique in the CSV data and every many-side key exists on it.
 5. Report: page folders match ``pages.json``; every field a visual uses exists in the model as a column or measure;
    every page shows the synthetic-data label.
@@ -187,13 +188,26 @@ def validate(offline: bool = False) -> list[str]:
     if "IsParameterQuery=true" not in expr or "fnLoadCsv" not in expr:
         errors.append("expressions.tmdl: DataFolder parameter or fnLoadCsv missing")
 
-    # 3. DAX
+    # 3. Names: Power BI compares object names case-insensitively across the whole model, so a measure may not share
+    # its name with another measure or with any column of any table ("cannot be created because a column with the
+    # same name already exists").
     all_measures = {}
+    seen: dict[str, str] = {}
+    columns_ci: dict[str, list[str]] = {}
+    for t, info in tables.items():
+        for c in info["columns"]:
+            columns_ci.setdefault(c.lower(), []).append(f"{t}[{c}]")
     for t, info in tables.items():
         for mname in info["measures"]:
-            if mname in all_measures:
-                errors.append(f"duplicate measure name {mname}")
+            k = mname.lower()
+            if k in seen:
+                errors.append(f"duplicate measure name [{mname}] in {t} and {seen[k]}")
+            if k in columns_ci:
+                errors.append(f"measure {t}[{mname}] has the same name as column {', '.join(columns_ci[k])}")
+            seen[k] = t
             all_measures[mname] = t
+
+    # 3b. DAX references
     for t, info in tables.items():
         for mname, e in info["measures"].items():
             cols, bare = dax_refs(e)
