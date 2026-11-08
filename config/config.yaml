@@ -82,6 +82,20 @@ sample:
     crisis: ["2021-07-01", "2023-06-30"]
     post_crisis: ["2023-07-01", null]
 
+forecasting:
+  horizons: [1, 5, 21]          # business days: 1 day, 1 week, 1 month
+  train_window: 750             # rolling estimation window (about 3 years)
+  refit_every: 21               # parameters re-estimated every 21 trading days; state updated daily
+  alpha: 0.05
+  arima_orders: [[0, 0], [1, 0], [0, 1], [1, 1], [2, 0], [0, 2]]   # (p, q) candidates, chosen by AIC
+  gbm:
+    max_iter: 300
+    learning_rate: 0.03
+    max_depth: 3
+    min_samples_leaf: 40
+    l2_regularization: 1.0
+  n_jobs: 4
+
 diagnostics:
   alpha: 0.05
   ljung_box_lags: [5, 10, 20]

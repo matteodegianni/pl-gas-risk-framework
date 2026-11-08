@@ -4,7 +4,7 @@ Market, margin and credit risk framework for a Polish gas supplier that **buys p
 
 Full scope and stage plan: [docs/project_brief.md](docs/project_brief.md).
 
-> Status: **Phase 1, Stages 1 (data and data quality) and 2 (diagnostics) complete.** Later stages are not built yet.
+> Status: **Phase 1, Stages 1 (data and data quality), 2 (diagnostics) and 3 (forecasting) complete.** Later stages are not built yet.
 
 ## Repository layout
 
@@ -21,6 +21,8 @@ src/gasrisk/
     report.py             generated Stage 1 report
   diagnostics.py          Stage 2: FX source timing, stationarity, serial dependence, distribution
   diagnostics_report.py   generated Stage 2 report
+  forecasting.py          Stage 3: walk-forward forecasts, Diebold-Mariano tests, ablation
+  forecasting_report.py   generated Stage 3 report and figure
 tests/                    pytest suite (offline, no network)
 outputs/                  committed results: data quality log and Stage 1 tables
 data/                     raw and clean data (gitignored, see data/README.md)
@@ -47,6 +49,7 @@ This downloads TGE gas and EUA auction prices from the Instrat API, EUR/PLN from
 
 ```bash
 .venv/bin/python -m gasrisk.diagnostics
+.venv/bin/python -m gasrisk.forecasting   # Stage 3, about 5-10 minutes on 4 cores
 ```
 
 ```bash
@@ -76,6 +79,23 @@ Generated results: [outputs/stage2_report.md](outputs/stage2_report.md).
 - **Serial dependence.** Ljung-Box on returns and squared returns, a heteroskedasticity-robust portmanteau test for the mean (standard Ljung-Box over-rejects under volatility clustering) and ARCH-LM.
 - **Distribution.** Skewness, excess kurtosis, Jarque-Bera, tail frequencies and quantiles against the normal, full sample and pre-crisis, crisis and post-crisis sub-periods.
 
+## Stage 3 - forecasting
+
+Generated results: [outputs/stage3_report.md](outputs/stage3_report.md).
+
+- **Targets and horizons.** TTF (roll-adjusted), EUR/PLN (ECB), TGE and the location plus tenor basis at 1, 5 and 21 business days; log-price loss for prices, EUR/MWh for the basis.
+- **Walk-forward.** Rolling 750-day window, parameters re-estimated every 21 trading days, state updated daily; direct h-step models train only on targets observed by the fit date (tested).
+- **Models.** Random walk benchmark, ARIMA and ETS chosen by AIC, gradient boosting, and a linear direct model for TGE and the basis with a step-by-step ablation of its feature groups.
+- **Evaluation.** RMSE, MAE, directional accuracy with a binomial test, Diebold-Mariano against the random walk (HAC variance with h-1 lags, Harvey-Leybourne-Newbold correction), Holm adjustment across all 42 model-horizon-series comparisons. A random-walk win is reported as a valid finding.
+- **Robustness.** Leakage tests (no feature or forecast at t changes when data after t change), a placebo with TTF and FX lagged one more day, and a Newey-West sensitivity for the DM variance.
+
+Key findings (all figures from the generated report):
+
+- **TTF and EUR/PLN:** the random walk is not beaten at any horizon; gradient boosting is significantly worse at every horizon.
+- **TGE, 1 day:** the linear model has an RMSE ratio of 0.916 against the random walk (raw DM p 0.0022, directional accuracy 0.670). The gain comes from same-day TTF and FX moves: with them lagged one more day, 5.9% of the gain survives. It **does not survive Holm adjustment** (adjusted p 0.0928 across all 42 comparisons; 0.0530 within the 24 TGE and basis comparisons).
+- **Basis, 1 day:** the lowest RMSE ratio is 0.911 (ETS) and directional accuracy ranges from 0.627 to 0.654 across models, but the RMSE gain is not significant (smallest raw DM p 0.0729); the linear model's gain comes from the basis's own reversal and survives the placebo.
+- **Overall:** after multiple-testing correction, no model beats the random walk for any series or horizon.
+
 ## Data sources and credits
 
 | Data | Source | Licence |
@@ -89,9 +109,10 @@ Generated results: [outputs/stage2_report.md](outputs/stage2_report.md).
 
 Gas price data: Instrat, energy.instrat.pl, CC BY-NC 4.0, original source TGE. This is a non-commercial portfolio project. No raw or cleaned market data are committed; the code fetches API data at runtime and reads the Investing.com exports from a local, gitignored folder. Committed outputs contain counts, dates, returns-based statistics and issue metadata only.
 
-## Limitations (Stage 1)
+## Limitations
 
 - TTF prices come from manual exports of continuation series; contract identities on each day are inferred from the expiry rule, not supplied by the source.
 - The front-month export (CME listing) is thin, with long settlement-only periods.
 - **The TGE-TTF basis is a location plus tenor basis**, not a pure location basis: TGE is a Polish day-ahead spot index, the hedge leg is the Dutch TTF second-month future. Its fat tails come mainly from TGE spot spikes (the TGE leg is the larger leg on most basis tail days, see the Stage 2 report), so basis risk measured here overstates what a same-tenor hedge would leave. A TTF day-ahead or TGE forward series would be needed to separate the two components; neither is available from the free sources used.
 - EUA prices are auction clearing prices held every few days, not continuous futures settlements.
+- TGE 1-day forecastability comes from same-day TTF and FX moves (Stage 3 ablation and placebo) and does not survive a Holm correction for multiple testing. TGEgasDA averages trades over the day while TTF settles at the end of it, so the effect partly reflects index construction: usable as a risk forecast input, not evidence of a tradable edge.
